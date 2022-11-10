@@ -1,0 +1,106 @@
+⊼².📹 5.3 handling expressions
+	parse trees:
+		infix ← human oriented, source language
+			a*(b+c)
+		prefix ← functional notation. function comes first, then arguments
+			*a+bc
+		postfix ← stack oriented
+			abc+*
+	source is infix, compiler translates to postfix for stack machine
+	we've already implemented parse tree tech with syntax analyzer's xml output
+	depth first tree traversal does this
+		go all the way down, push leaf, backtrack, repeat
+		we're not using this
+
+	# well-equipped to take infix source and convert to postfix
+	codeWrite(expression):
+		match expression:
+			case number n:
+				output 'push n'
+			case variable var:
+				output 'push var' ← local 0, static 2. using symbol table
+			case 'exp₁ op exp₂': use recursion!
+				codeWrite(exp₁)
+				codeWrite(exp₂)
+				output 'op'
+			case 'op expression':
+				codewrite(expression)
+				output 'op'
+			case f(exp₁, exp₂, ...):
+				codeWrite(exp₁)
+				codeWrite(exp₂)
+				codeWrite(exp.)
+				output 'call f' ← function call
+
+	🌊 take some time to play with a few expressions
+
+	switch from parsing to code generation
+	example: let x=a+b*c
+		parse tree
+		compiler ignores operator priority ← implementer's choice
+		Jack language does not have operator priority
+		→ put burden on the user
+
+
+
+⊼².📹 unit 5.2 handling variables
+	sum = x * (1 + rate)
+		push x
+		push 1
+		push rate
+		+
+		*
+		pop sum
+
+	the VM language does not have symbolic variables
+		only local, argument, this, that, etc.
+		symbolic variables must be mapped to virual memory segments
+			are sum, x, and rate field, static, local, or argument variables
+	class-level variables: field, static
+	subroutine-level variables: local, argument
+	variable properties:
+		name (identifier)
+		type (int, char, boolean, class name)
+		kind (field, static, local, argument)
+		scope (class level, subroutine level)
+
+	bundle of variable properties that must be maintained for every var in src
+	the symbol table not only includes the kind of a variable, but also which number of that kind each variable is.
+
+	every method subroutine has this as the first entry of its symbol table
+		its kind of argument
+
+	high level programming languages vary in terms of variable
+		types, kinds, and scoping
+
+	unlimited nested scoping can be handled with a linked list of symbol tables
+
+
+⊼² 5.1 code generation
+	compiler II: code generation
+	syntax analyzer: tokenizer + compilation engine (parser)
+		XML meant to verify syntax analyzer understands syntactic structure
+	project 11 throws out XML code. new goal:
+		extend basic syntax anlyzer to adding code generation ability
+		passive XML code → morph into executable VM code
+	each Jack class file compiled separately
+	class: point
+		class declaration → {classVarDec*  subroutineDec*}
+
+	compilation	is two separate and standalone steps:
+		localized! modular strategy
+		compile class-level code ← classVarDec*
+		compile one subroutine at a time ← subroutineDec*
+			we have 5 challenges: generate VM code to capture these semantics:
+				challenge is bridging gap between simple VM code
+					with complicated high-level language
+			variables, expressions, flow of control, objects, arrays
+
+	we will learn how programming languages work
+		handle arrays and objects in low-level
+		general techniques
+			parsing
+			recursive compilation
+			code generation
+			symbol tables
+			memory management
