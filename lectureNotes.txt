@@ -1,3 +1,85 @@
+
+
+
+
+
+
+
+
+
+⊼².📹 5.5 handling objects: low-level aspects
+	sequence of three units on handling objects!
+	let's explore low level aspects of data handling using VM commands
+	programmer friendly abstractions! levels of programming languages:
+		high, OO: create and manipulate arrays, objects
+		mid, VM: operate on virtual memory segments
+		low machine language
+	everything we do at VM level reduces to operations on the RAM
+	first 5 words in RAM are SP LCL ARG THIS THAT
+		followed by the stack, then heap
+		local and argument variables are stored → stack
+		objects and array data → heap
+		in order to access these, we need to anchor THIS and THAT
+			use virtual 'pointer' segment instead of THIS and THAT
+			🕯 why?
+	🌊 examples
+
+
+
+⊼².📹 5.4 handling flow of control
+	5 possible statements: [while, if] are the challenging ones
+		let, do, return are trivial
+
+	if (expression) {statements₁} else {statements₂}
+		use a flow chart to rewrite this
+		negate if expression:
+			if not expression:
+				statements₂
+			else:
+				statements₁
+
+		note that below, the labels must be unique
+		VM code
+			compiled (expression)
+			not ← negates our expression
+			if-goto L1
+			compiled (statements₁) ← executes if expression was true
+			goto L2
+		label L1
+			compiled (statements₂)
+		label L2
+
+	while (expression) {statements}
+		pseudocode
+			negate expression
+			if not expression:
+				pass
+			else:
+				statements
+
+		VM code
+			label L1
+				compiled (expression)
+				not
+				if-goto L2
+				compiled (statements)
+				goto L1
+			label L2
+
+	minor complications
+		program typically containts multiple if and while statements
+			thus labels must be unique, perhaps using a counter
+		if and while statements are often nested in 'telescopic code'
+			a compiler should be able to support infinite nesting given memory
+			our compiler's recursive strategy already takes care of this
+
+	compiling variables, expressions, and flow of control
+		→ allows us to build array-less simple procedural language
+		remember we don't translate down to machine language because →VM
+		it's manageable and elegant because we took care of the VM abstraction
+
+
+
 ⊼².📹 5.3 handling expressions
 	parse trees:
 		infix ← human oriented, source language
@@ -74,6 +156,7 @@
 		types, kinds, and scoping
 
 	unlimited nested scoping can be handled with a linked list of symbol tables
+
 
 
 ⊼² 5.1 code generation

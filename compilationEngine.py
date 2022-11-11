@@ -251,7 +251,7 @@ class CompilationEngine:
 		# 'constructor', 'function', or 'method'
 		# so if it doesn't, we can return False
 		if self.tk.getTokenType() != TokenType.KEYWORD:
-			print(f'compilesrtDec → {self.tk.getTokenType()}')
+			print(f'compileSrtDec → {self.tk.getTokenType()}')
 			return False
 		else:
 			keywordValue = self.tk.keyWord()
