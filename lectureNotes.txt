@@ -7,6 +7,85 @@
 
 
 
+
+
+
+
+⊼².📹 5.6 handling objects: construction
+	compiler faces challenge of compiling client class, then Point class
+		not necessarily in that order!
+		let p1 = Point.new(2, 3); ← caller
+		constructor Point new(...) ← callee
+	each object has a spot on the heap
+		the stack holds object addresses. these point to the heap
+	whenever compiler encounters variable declaration, no code generated
+		just updates the subroutine's symbol table
+	handling calls to create new objects
+	let p1 = Point.new(2, 3)
+		push 2
+		push 3
+		call Point.new
+		pop p1 ← p1 is the base address of the new object
+	remember the contract! caller assumes constructor's code
+		1. arranges a memory block to store the new object
+		2. returns its base address to the caller
+	example:
+		var Point p1, p2;
+		var int d;
+
+		during compile time, compiler maps
+			p1 on local 0, p2 on local 1, d on local 2
+		during run time, execution of the constructor's code effects creation of objects themselves on the heap
+
+	purpose of constructor
+		arrange creation of new object
+		initializes new object to some intial state
+		→ constructor must have access to object's fields via THIS segment
+			but first constructor must anchor THIS using POINTER
+	example:
+		constructor Point new(int ax, int ay)
+		→ generates no code, just creates symbol table for subroutine
+		compiler knows it generates code for constructor
+			knows constructor must create space in RAM for new object
+			how does compiler know how much space is needed?
+				by consulting the subroutine symbol table! all values 16-bit
+			for ax, ay, we must secure memory block with two words
+			OS helps with allocate(n)
+				→ finds memory block in RAM n words long that's free!
+				implementation is clever and elegant. implement in OS module
+
+		# constructor Point new(int ax, int ay)
+			push 2 ← two 16-bit words required (x and y)
+			call Memory.alloc 1 ← one argument (the 2 we just pushed)
+				# returns base address of newly created object
+			pop pointer 0 ← THIS now points to addr of new object!
+
+		# let x = ax; let y = ay ← put arguments into new object :3
+			push argument 0
+			pop this 0
+			push argument 1
+			pop this 1
+
+		# let pointCoint = pointCount + 1;
+			push static 0
+			push 1
+			add
+			pop static 0
+
+		# return this
+			push pointer 0 ← THIS is already anchored correctly
+								and contains base addr of THIS
+			return ← returns base address of newly created object
+
+	# let p1 = Point.new(2,3)
+		push 2
+		push 3
+		call Point.new
+		pop p1
+		→ after calling Point.new, we pop the new base addr onto p1 :D
+
+
+
 ⊼².📹 5.5 handling objects: low-level aspects
 	sequence of three units on handling objects!
 	let's explore low level aspects of data handling using VM commands
