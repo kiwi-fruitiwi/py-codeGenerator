@@ -7,7 +7,102 @@
 
 
 
+⊼².📹 unit 5.8: handling arrays
+	array construction
+		var Array arr; → allocate local variable, initialize to 0
+			generates no code. only affects symbol table
+		later on in the program, if we want to construct array with:
+			let arr = Array.new(5);
+			→ allocate sufficient space in the heap with base addr local0
+			from caller's perspective handled exactly like object construction
+	THIS←RAM[3] and THAT←RAM[4] reminder.
+		holds addr to this and that segments
+		portable, park wherever we want in the RAM
+		this ← current object values
+			base addr THIS, set with pop pointer 0
+		that ← values of current array.
+			base addr THAT, set with pop pointer 1
+	RAM access using 'that'
+		// RAM[8056] = 17
+		push 8056
+		pop pointer 1
+		push 17
+		pop that 0
 
+		pop pointer 1 ← sets 'that' = stack.pop()
+			aligns 0 with the RAM address whose value is THAT
+		pop that 0
+			sets 'that 0' = stack.pop()
+			sets RAM address aligned with 'that 0' to the same value
+
+	array access
+		// arr[2] = 17
+		push arr  # base address
+		push 2  # offset
+		add
+		pop pointer 1
+		push 17
+		pop that 0
+
+		note we only use 'that 0' but not 'that n'
+			we could have written this instead:
+				push arr
+				pop pointer 1
+				push 17
+				pop that 2
+			but this only works when the array index is constant:
+				arr[x]=y doesn't work
+		note the VM code knows nothing about the host RAM
+			code is safe and should run on different platforms
+			can't make assumptions on underlying hardware platforms
+			virtue of working with virtual machine
+
+	arr[expression₁] = expression₂
+		push arr
+		push expression₁
+		add
+		pop pointer 1
+		push expression₂
+		pop that 0
+
+		but there's a problem here: a[i] = b[j]
+			push a
+			push i
+			add
+			pop pointer 1
+
+			# now handle the right side
+			push b
+			push j
+			add
+			pop pointer 1 ← crash! pointer 1 overrides previous address
+
+		let's create a tmp variable to store
+			push a
+			push i
+			add
+
+			push b
+			push j
+			add
+
+			# now stack contains RAM addresses of a[i] and b[j]
+			pop pointer 1
+			pop temp 0  # store b[j]
+			pop pointer 1  # now we can pop addr of a[i] onto 'that'
+			push temp 0  # b[j] → stack
+			pop that 0
+
+		generalizing solution: works for infinite nesting?
+			push arr
+			VM code for computing and pushing value of expression₁
+			add
+			VM code for computing and pushing value of expression₂
+			pop temp 0	# temp 0 = value of expression₂
+						# top stack value = RAM address of arr[expression₁]
+			pop pointer 1
+			push temp 0
+			pop that 0
 
 
 
