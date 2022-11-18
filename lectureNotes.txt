@@ -106,6 +106,89 @@
 
 
 
+⊼².📹 unit 5.7 object manipulation
+	handling objects tasks: construction, manipulation
+		compiling obj.methodCall()
+		compiling methods
+	examples
+		let x = p1.getx()
+		let p3 = p1.plus(p2)
+		let d = p1.distance(p2) ← distance is the caller
+
+		while the following is the callee definition:
+
+		method int distance(Point other) {
+			var int dx, dy;
+			let dx = x - other.getx();
+			let dy = y - other.gety();
+			return Math.sqrt((dx*dx) + (dy*dy));
+		}
+
+	challenge of compiling object oriented code: procedural machine language
+		if you want to use subroutine like distance. apply method on object
+		but machine language is procedural
+		take object and always pass in as first argument, like python
+			then push rest of arguments
+			then call
+
+		in: let d = p2.distance(p2), generated VM code looks like:
+			push p1
+			push p2
+			call distance
+
+	methods designed to act on current object: this
+		how do we facilitate access to these fields?
+		access iᵗʰ field by using: this i
+		we anchor 'this' segment using 'pointer'
+
+	compiling methods
+		no code is generated for method declaration, variable declaration
+			only symbol table is updated
+			anchor 'this', which the caller passed conveniently as argument 0
+
+		generated VM code:
+			# method int distance(Point other)
+			# var int dx, dy ← symbol table updates, no VM code
+
+			# associate THIS memory segment with object we're operating on
+			push argument 0
+			pop pointer 0  # THIS = argument 0, pointer 0 = THIS
+
+			# let dx = x - other.getx()
+			push this 0  ← puts x on the stack. this 0 means first field var
+			push argument 1  ← puts Point other on stack
+			call Point.getx 1  ← calls getx with two objects on stack
+			↑ '1' doesn't count the current object as an argument, only other
+
+			sub  # x - other.getx()
+			pop local 0  # stores to dx, the 1ˢᵗ local var
+
+		after any method, we must return something to the caller
+			# compiled caller code for: let d = p1.distance(p2);
+			...
+			push p1
+			push p2
+			call Point.distance
+			push d
+			...
+
+		compiling void methods
+			method void print() generates only one symbol table entry
+				name:this, type:Point, kind:argument, #:0
+			next we generate code that associates 'this' memory segment
+				with the object the method operates on
+				→ push argument 0; pop pointer 0
+			we must return a value!
+				push constant 0
+				return
+			the compiled caller code needs to dump the return value
+				do p1.print(); →
+					push p1
+					call Point.print
+					pop temp 0
+
+
+
 ⊼².📹 5.6 handling objects: construction
 	compiler faces challenge of compiling client class, then Point class
 		not necessarily in that order!
