@@ -7,6 +7,45 @@
 
 
 
+⊼².📹→✒ unit 5.10 proposed implementation
+	project 10 created a syntax analyzer
+	project 11 extends the analyzer into a full-scale compiler
+		stage 0: syntax analyzer is done
+		stage 1: symbol table handling so everything isn't just an identifier
+			test via richer XML code with refined identifier description
+		stage 2: code generation
+	jackCompiler works on .jack files and directories
+		for each .jack source file, compiler creates a JackTokenizer +output
+		compiler uses symbolTable, compilationEngine, VMWriter modules
+	symbolTable
+		scope of static, field variables: class in which they are defined
+		scope of argument, local variables: subroutine code. unknown outside
+		compiler never needs more than 2 symbol tables
+			subroutine level table can be reset every subroutine
+			class level table can be reset every class :3
+		API →
+			startSubroutine: resets table
+			define(name, type, kind: STATIC, FIELD, ARG, VAR)
+			varCount(kind): returns number of symbols already defined
+			kindOf(name)
+			typeOf(name)
+			indexOf(name)
+		when compiling error-free Jack code, each symbol not found in the two symbol tables can be assumed to be either a subroutine name or a class name. This covers all bases for 'identifier'.
+	VMWriter ← a list of wrapper functions
+		writePush(segment, index)
+		writePop(segment, index)
+		writeArithmetic(command)
+		writeLabel, Goto, If,
+		writeCall(name, nArgs), Function(name, nLocals)
+		return
+		close
+	compilationEngine
+		organized as a series of compileₓ routines
+		each compile routine should read the ₓ construct from the input
+			advance and compile
+
+
+
 ⊼².📹 unit 5.8: handling arrays
 	array construction
 		var Array arr; → allocate local variable, initialize to 0
