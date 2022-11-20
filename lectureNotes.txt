@@ -45,6 +45,69 @@
 			advance and compile
 
 
+⊼².📹→✒→📇 unit 5.9: standard VM mapping
+	compiler is 2-tiered: jack to VM, VM to target platform machine language
+	The standard mapping over the VM platform specifies how to map:
+		the constructs of the high-level language onto
+		the constructs of the virtual machine.
+	different languages have different documents describing standard mappings
+
+	files and subroutines mapping
+		each file filename.jack → filename.vm
+		each subroutine subName in fileName.jack → VM func fileName.subName
+		jack constructor / function with k args → VM func, k args
+		jack method with k args → VM function with k+1 args
+
+	methods, constructors, functions all mapped to vm functions with caveats
+
+	mapping variables
+		4 kinds of variables: local, static, field, argument
+		local variables → virtual segment local
+		📇 first two variables declared in subroutine:
+			mapped onto local 0, local 1
+		argument variables → argument 0, 1, ...n
+		static variables → static 0, 1, 2, 3, ...n
+		field variables
+			assume pointer 0 assigned to this
+			ith field is mapped onto this i
+
+	mapping arrays: arr[i]
+		set point 1 to entry's address (arr+i)
+		access that 0
+
+	mapping subroutines
+		three types: methods, functions, constructors
+		convention: compiled VM code must set base of this segment to arg 0
+			method acts on current object
+			now this 0, this 1, etc. act as placeholders for the fields
+
+		constructors
+			set base of segment this to new object's base address
+			return object's base address to the caller
+
+		void functions or methods
+			every VM function must return a value
+			void functions return constant 0
+			caller must remember it called a void subroutine
+				get rid of top of stack
+
+	compiling costants
+		null and false are mapped to constant 0
+		true is mapped to constant -1 ← push 1, neg
+
+	OS classes and subroutines
+		Math, Memory, Screen, Output, Keyboard, String, Array, Sys
+		OS class files must reside in same directory as VM files
+
+		multiplication handled by Math.multiply()
+		division handled by Math.divide()
+		String constants created with OS constructor String.new(length)
+		String assignments: String.appendChar per character
+
+		Memory.alloc(size=#fields)
+			There is a 1:1 mapping between the size parameter of Memory.alloc and the number of fields in a new object because each field is 16 bits long.
+
+
 
 ⊼².📹 unit 5.8: handling arrays
 	array construction
