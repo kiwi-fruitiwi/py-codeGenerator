@@ -15,6 +15,10 @@
 # we give each variable a running index within its scope and kind
 # the index starts at 0 and increments by 1 every new symbol
 #	reset to 0 when we start a new scope
+#
+# when you compile error free Jack code, each identifier not found in the class
+# or srt symbol tables can be assumed to be either a:
+# 	subroutine or class name
 
 import enum
 
@@ -27,8 +31,19 @@ class VarType(enum.Enum):
 
 
 class SymbolTable:
-	# start new subroutine scope
 	def __init__(self):
+		# use hash tables:
+
+		# one for class scope
+		self.classTable = {}
+
+		# and one for subroutine scope
+		self.srtTable = {}
+
+	def startSubroutine(self):
+		"""
+		starts a new subroutine scope, i.e. resets the subroutine's symbol table
+		"""
 		pass
 
 	def define(self, name: str, vType: str, kind: VarType):
