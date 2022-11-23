@@ -77,7 +77,6 @@ from tokenizer import JackTokenizer, TokenType
 
 
 def convertSymbolToHtml(value):
-	result = None
 	match value:
 		case '<':
 			result = '&lt;'

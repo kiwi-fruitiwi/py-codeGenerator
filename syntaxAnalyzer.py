@@ -2,6 +2,9 @@
 @author kiwi
 @date 2022.11.26
 
+make symbolTables → see 5.10 API
+test handling of identifiers
+
 test programs for evolving compiler
 	seven
 		arithmetic expression involving constants only
