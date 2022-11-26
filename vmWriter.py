@@ -1,5 +1,4 @@
-# encapsulates writing VM commands
-#
+# encapsulates all activities related to generating output from the compiler
 #
 
 
@@ -54,7 +53,47 @@ class VMWriter:
 		"""
 		pass
 
+	def writeLabel(self, label: str):
+		"""
+		writes a VM label command
+		"""
+		pass
 
+	def writeGoto(self, label: str):
+		"""
+		writes a VM goto command
+		"""
+		pass
+
+	def writeIf(self, label: str):
+		"""
+		writes a VM if-goto command
+		"""
+		pass
+
+	def writeCall(self, name: str, nArgs: int):
+		"""
+		writes a VM call command
+		"""
+		pass
+
+	def writeFunction(self, name: str, nLocals: int):
+		"""
+		writes a VM function command
+		"""
+		pass
+
+	def writeReturn(self):
+		"""
+		writes a VM return command
+		"""
+		pass
+
+	def close(self):
+		"""
+		closes the output file
+		"""
+		pass
 
 
 
