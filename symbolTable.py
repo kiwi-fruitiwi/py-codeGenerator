@@ -40,11 +40,13 @@ class SymbolTable:
 		# and one for subroutine scope
 		self.srtTable = {}
 
+
 	def startSubroutine(self):
 		"""
 		starts a new subroutine scope, i.e. resets the subroutine's symbol table
 		"""
 		pass
+
 
 	def define(self, name: str, vType: str, kind: VarType):
 		"""
@@ -59,6 +61,7 @@ class SymbolTable:
 		"""
 		pass
 
+
 	def varCount(self, kind: VarType):
 		"""
 		:param kind: STATIC, FIELD, ARG, VAR
@@ -66,6 +69,7 @@ class SymbolTable:
 		current scope
 		"""
 		pass
+
 
 	def kindOf(self, name: str):
 		"""
@@ -76,6 +80,7 @@ class SymbolTable:
 		"""
 		pass
 
+
 	def typeOf(self, name: str):
 		"""
 		:param name: identifier, e.g. x, y, pointCount, this
@@ -83,16 +88,13 @@ class SymbolTable:
 		"""
 		pass
 
+
 	def indexOf(self, name: str):
 		"""
 		:param name: identifier, e.g. x, y, pointCount, this
 		:return: the index assigned to the named identifier
 		"""
 		pass
-
-
-
-
 
 
 
