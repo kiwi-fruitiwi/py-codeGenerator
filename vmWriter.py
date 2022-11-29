@@ -1,7 +1,4 @@
 # encapsulates all activities related to generating output from the compiler
-#
-
-
 import enum
 
 
@@ -31,7 +28,7 @@ class ArithType(enum.Enum):
 class VMWriter:
 	def __init__(self, outputUri):
 		"""
-		creates a new output .vm file and prepares it for writing.
+		creates a new output .vm file and prepares it for writing
 		"""
 		self.out = open(outputUri, 'w')
 
@@ -45,65 +42,65 @@ class VMWriter:
 
 	def writePop(self, segment: SegType, index: int):
 		"""
-		writes a VM pop command
+		writes a VM pop command, e.g. 'pop argument 0'
 		"""
 		self.out.write(f'pop {segment.value} {index}')
 
 
 	def writeArithmetic(self, command: ArithType):
 		"""
-		writes a VM arithmetic-logical command
+		writes a VM arithmetic-logical command, e.g. 'and'
 		"""
 		self.out.write(f'{command.value}')
 
 
 	def writeLabel(self, label: str):
 		"""
-		writes a VM label command
+		writes a VM label command, e.g. 'label END_PROGRAM'
 		"""
-		pass
+		self.out.write(f'label {label}')
 
 
 	def writeGoto(self, label: str):
 		"""
-		writes a VM goto command
+		writes a VM goto command, e.g. 'goto MAIN_LOOP_START'
 		"""
-		pass
+		self.out.write(f'goto {label}')
 
 
 	def writeIf(self, label: str):
 		"""
-		writes a VM if-goto command
+		writes a VM if-goto command, e.g. 'if-goto COMPUTE_ELEMENT'
 		"""
-		pass
+		self.out.write(f'if-goto {label}')
 
 
-	def writeCall(self, name: str, nArgs: int):
+	def writeCall(self, functionName: str, nArgs: int):
 		"""
 		writes a VM call command
 		"""
-		pass
+		self.out.write(f'call {functionName} {nArgs}')
 
 
-	def writeFunction(self, name: str, nLocals: int):
+	def writeFunction(self, functionName: str, nLocals: int):
 		"""
-		writes a VM function command
+		writes a VM function command, e.g. 'function SimpleFunction.test 2'
 		"""
-		pass
+		self.out.write(f'function {functionName} {nLocals}')
 
 
 	def writeReturn(self):
 		"""
 		writes a VM return command
 		"""
-		pass
+		self.out.write(f'return')
 
 
 	def close(self):
 		"""
 		closes the output file
 		"""
-		pass
+		self.out.close()
 
 
 
