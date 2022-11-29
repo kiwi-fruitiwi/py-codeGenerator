@@ -39,6 +39,36 @@ class Entry:
 		self.kind = kind
 		self.quantity = quantity
 
+	def __eq__(self, other):
+		return \
+			self.type == other.type and \
+			self.kind == other.kind and \
+			self.quantity == other.quantity
+
+	def __repr__(self):
+		return f'[{self.type}, {self.kind}, {self.quantity}]'
+
+
+def displaySymbolTable(table: Dict):
+	result = ""
+	for key in table.keys():
+		result += f'  {key}: {table[key]}\n'
+	return result
+
+
+def testSymbolTables():
+	st = SymbolTable()
+
+	st.define('x', 'int', VarKind.FIELD)
+	st.define('y', 'int', VarKind.FIELD)
+	st.define('pointCount', 'int', VarKind.STATIC)
+
+	st.define('this', 'Point', VarKind.ARG)
+	st.define('other', 'Point', VarKind.ARG)
+	st.define('dx', 'int', VarKind.VAR)
+	st.define('dy', 'int', VarKind.VAR)
+	print(st)
+
 
 class SymbolTable:
 	def __init__(self):
@@ -55,7 +85,7 @@ class SymbolTable:
 		self.staticCount = 0
 		self.fieldCount = 0
 		self.argCount = 0
-		self.varCount = 0
+		self.localCount = 0
 
 
 	def startSubroutine(self):
@@ -77,15 +107,33 @@ class SymbolTable:
 		:return: nothing
 		"""
 		# assert no duplicate variable names
-
+		assert name not in self.classTable.keys(), f'duplicate id: {name}'
+		assert name not in self.srtTable.keys()
 
 		# find how many of this kind we have so far
 		currentCount = self.varCount(kind)
 
-		if kind in [VarKind.STATIC, VarKind.FIELD]:
-			self.classTable[name] = Entry(vType, kind, currentCount + 1)
+		match kind:
+			case VarKind.STATIC:
+				self.staticCount += 1
+				self.classTable[name] = Entry(vType, kind, currentCount)
+				return
+			case VarKind.FIELD:
+				self.fieldCount += 1
+				self.classTable[name] = Entry(vType, kind, currentCount)
+				return
+			case VarKind.ARG:
+				self.argCount += 1
+				self.srtTable[name] = Entry(vType, kind, currentCount)
+				return
+			case VarKind.VAR:
+				self.localCount += 1
+				self.srtTable[name] = Entry(vType, kind, currentCount)
+				return
 
 		# assert arg var only go into srtTable, static field only → classTable
+		raise ValueError(f'{kind} not found')
+
 
 	def varCount(self, kind: VarKind) -> int:
 		"""
@@ -101,7 +149,7 @@ class SymbolTable:
 			case VarKind.ARG:
 				return self.argCount
 			case VarKind.VAR:
-				return self.varCount
+				return self.localCount
 
 		raise ValueError(f'{kind} not found')
 
@@ -161,16 +209,21 @@ class SymbolTable:
 		# throw error if name doesn't exist in either
 		raise ValueError(f'{name} not found in either symbol table')
 
+
 	def __repr__(self):
 		# iterate through both tables and display them
 		# helper function: printSymbolTable(d: dict)
-
-		pass
-
-
-
-
-
-
+		result = 'class-level symbol table:\n'
+		result += displaySymbolTable(self.classTable)
+		result += '\n\n'
+		result += 'subroutine-level symbol table:\n'
+		result += displaySymbolTable(self.srtTable)
+		return result
 
 
+
+
+
+
+
+testSymbolTables()
