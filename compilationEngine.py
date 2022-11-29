@@ -1,77 +1,25 @@
-# no one knows why it's called CompilationEngine. this is a parser that feeds
-# from syntaxAnalyzer output:  "a Jack analyzer that makes use of Tokenizer's
-# services"
+# project 11 compilationEngine: convert to use symbolTables
 #
-# step 1: basic compilationEngine that handles everything but expressions
-# step 2: add handling of expressions
+# 	compilationEngine needs fields: class+srt level symbolTables
+# 	reset when appropriate (never for class since each file is a class)
+# 	search through compilationEngine for 'identifier'
+# 		see where compileIdentifier is called
+# 			verify with Jack grammar sheet
+# 		classVarDec: (static|field) type varName (,varName)*;
+# 		varDec: var type varName (,varName)*;
 #
-# the tokenizer handles lexical elements, while the compilationEngine handles
-# the following: program structure, statements, and expressions
-#
-#   program structure →
-#     class: 'class' className '{' classVarDec* subroutineDec* '}'
-#     classVarDec: static|field type varName(,varName)*;
-# 	  type: int char boolean className
-#     subroutineDec: (constructor|function|method)
-#     	(void|type) subroutineName(parameterList) subroutineBody
-#     parameterList: (type varName) (, type varName)*)?
-#     subroutineBody: {varDec* statements}
-#     varDec: var type varName (, varName)*;
-#     className: identifier
-#     subroutineName: identifier
-#     varName: identifier
-#
-#   statements →
-#     statements: statement*
-#     statement: let if while do return
-#     letStatement: let varName([expression])? = expression;
-#     ifStatement: if(expression){statements}(else{statements})?
-#     whileStatement: while(expression){statements}
-#     doStatement: do subroutineCall;
-#     returnStatement: return expression?;
-#
-#   expressions →
-#	  expression: term (op term)*
-#	  term: integerConstant | stringConstant | keywordConstant | varName |
-#	  	varName[expression] | subroutineCall | (expression) | unaryOp term
-#	  subroutineCall: subName(expressionList) |
-#	  	(className | varName).subroutineName(expressionList)
-#	  expressionList: (expression(, expression)*)?
-#	  op: + - * / & | < > =
-#	  unaryOp: - ~
-#	  keywordConstant: true false null this
-#
-# ⊼².📹 4.5 parser logic recursion
-#	statements → a Jack program includes statements, as follows:
-# 	statement: 		ifStatement | whiteStatement | letStatement
-# 	statements:		statement*
-# 	ifStatement:	if (expression) {statements}
-# 	whiteStatement:	while (expression) {statements}
-# 	letStatement:	let varName = expression;
-# 	expression: 	term (op term)?
-# 	term:			varName | constant
-# 	varName:		a string not beginning with a digit
-# 	constant:		a decimal number
-# 	op:				+, -, =, >, <
-#
+# 		discern between className and srtName →
+# 		class: class className
+# 		srtCall: not varName.srtName(exprList)
+# 			srtName(exprList) | (className|varName).srtName(exprList)
+# 		srtDec: (constructor|function|method) (void|type) srtName(pList) sBody
+# 		type: int | char | boolean | className
+# 	use typeOf, kindOf, indexOf to determine:
+# 		what to add to symbolTable on each identifier
+# 	goal → output per identifier
+# 		identifier category: var arg static field, class srt
+# 		running index for var arg static field
 
-# 2022.10.07 ⊼² current puzzles
-# 	how to detect if an expression exists for expressionList
-# 		don't we have to advance? set flag to skip next adv I guess
-# 		but then we have to check if the next token is an expression
-# 			seems like a complicated test
-# 	detecting names: class, subRoutine, var
-# 		it's an identifier
-# 			index 0 capital → className
-# 			subroutineName preceded by '.', but now do we detect that?
-# 				set previous token?
-# 	compileIdentifier: why do we have this?
-#
-# every rule has an associated compile method (15 total methods) except 6:
-#   type, className, subRoutineName, variableName, statement, subroutineCall
-#   the logic of these 6 rules is handled by the rules who invoke them
-#   e.g. there is no compileStatement because statement has subtypes, and it's
-#   split into compileIf, compileWhile, etc.
 
 from tokenizer import JackTokenizer, TokenType
 
