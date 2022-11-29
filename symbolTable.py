@@ -21,34 +21,49 @@
 # 	subroutine or class name
 
 import enum
+from typing import Dict
 
 
-class VarType(enum.Enum):
-	STATIC = 1
-	FIELD = 2
-	ARG = 3
-	VAR = 4
+class VarKind(enum.Enum):
+	STATIC = "static"
+	FIELD = "field"
+	ARG = "argument"
+	VAR = "local"
+
+
+class Entry:
+	def __init__(self, varType: str, kind: VarKind, quantity: int):
+		self.type = varType
+		self.kind = kind
+		self.quantity = quantity
 
 
 class SymbolTable:
 	def __init__(self):
 		# use hash tables:
 
+
 		# one for class scope
-		self.classTable = {}
+		self.classTable: Dict[str, Entry] = {}
 
 		# and one for subroutine scope
-		self.srtTable = {}
+		self.srtTable: Dict[str, Entry] = {}
+
+		# counts for all variable kinds
+		self.staticCount = 0
+		self.fieldCount = 0
+		self.argCount = 0
+		self.varCount = 0
 
 
 	def startSubroutine(self):
 		"""
 		starts a new subroutine scope, i.e. resets the subroutine's symbol table
 		"""
-		pass
+		self.srtTable = {}
 
 
-	def define(self, name: str, vType: str, kind: VarType):
+	def define(self, name: str, vType: str, kind: VarKind):
 		"""
 		defines a new identifier of the given name, type, and kind, and assigns
 		it to a running index. STATIC and FIELD identifiers have a class scope,
@@ -59,16 +74,33 @@ class SymbolTable:
 		:param kind: STATIC, FIELD, ARG, VAR
 		:return: nothing
 		"""
-		pass
+		# assert no duplicate variable names
 
 
-	def varCount(self, kind: VarType):
+		# find how many of this kind we have so far
+		currentCount = self.varCount(kind)
+
+		if kind in [VarKind.STATIC, VarKind.FIELD]:
+			self.classTable[name] = Entry(vType, kind, currentCount + 1)
+
+		# assert arg var only go into srtTable, static field only → classTable
+
+	def varCount(self, kind: VarKind) -> int:
 		"""
 		:param kind: STATIC, FIELD, ARG, VAR
-		:return: the number of variables of the given kind already defined in the
-		current scope
+		:return: the number of variables of the given →kind← already defined in
+		the	current scope
 		"""
-		pass
+		match kind:
+			case VarKind.STATIC:
+				return self.staticCount
+			case VarKind.FIELD:
+				return self.fieldCount
+			case VarKind.ARG:
+				return self.argCount
+			case VarKind.VAR:
+				return self.varCount
+		return 0
 
 
 	def kindOf(self, name: str):
@@ -94,8 +126,17 @@ class SymbolTable:
 		:param name: identifier, e.g. x, y, pointCount, this
 		:return: the index assigned to the named identifier
 		"""
-		pass
 
+		# look in srt-level symbol table first
+		if name in self.srtTable:
+			return self.srtTable[name].quantity
+
+		# if not found, check class-level symbol table
+		if name in self.classTable:
+			return self.classTable[name].quantity
+
+		# throw error if name doesn't exist in either
+		raise ValueError(f'{name} not found in either symbol table')
 
 
 
