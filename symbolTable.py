@@ -19,6 +19,8 @@
 # when you compile error free Jack code, each identifier not found in the class
 # or srt symbol tables can be assumed to be either a:
 # 	subroutine or class name
+#
+# TODO create symbolTable.py tests
 
 import enum
 from typing import Dict
@@ -100,7 +102,8 @@ class SymbolTable:
 				return self.argCount
 			case VarKind.VAR:
 				return self.varCount
-		return 0
+
+		raise ValueError(f'{kind} not found')
 
 
 	def kindOf(self, name: str):
@@ -110,7 +113,17 @@ class SymbolTable:
 		:param name: identifier, e.g. x, y, pointCount, this
 		:return: STATIC, FIELD, ARG, VAR
 		"""
-		pass
+
+		# look in srt-level symbol table first
+		if name in self.srtTable:
+			return self.srtTable[name].kind
+
+		# if not found, check class-level symbol table
+		if name in self.classTable:
+			return self.classTable[name].kind
+
+		# throw error if name doesn't exist in either
+		raise ValueError(f'{name} not found in either symbol table')
 
 
 	def typeOf(self, name: str):
@@ -118,13 +131,23 @@ class SymbolTable:
 		:param name: identifier, e.g. x, y, pointCount, this
 		:return: the type of the named identifier in the current scope
 		"""
-		pass
+
+		# look in srt-level symbol table first
+		if name in self.srtTable:
+			return self.srtTable[name].type
+
+		# if not found, check class-level symbol table
+		if name in self.classTable:
+			return self.classTable[name].type
+
+		# throw error if name doesn't exist in either
+		raise ValueError(f'{name} not found in either symbol table')
 
 
 	def indexOf(self, name: str):
 		"""
 		:param name: identifier, e.g. x, y, pointCount, this
-		:return: the index assigned to the named identifier
+		:return: the index assigned to the named identifier. not count. count+1
 		"""
 
 		# look in srt-level symbol table first
@@ -137,6 +160,12 @@ class SymbolTable:
 
 		# throw error if name doesn't exist in either
 		raise ValueError(f'{name} not found in either symbol table')
+
+	def __repr__(self):
+		# iterate through both tables and display them
+		# helper function: printSymbolTable(d: dict)
+
+		pass
 
 
 
