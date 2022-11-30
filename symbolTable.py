@@ -20,7 +20,7 @@
 # or srt symbol tables can be assumed to be either a:
 # 	subroutine or class name
 #
-# TODO create symbolTable.py tests
+# ☒ create symbolTable.py tests
 
 import enum
 from typing import Dict
@@ -61,13 +61,19 @@ def testSymbolTables():
 
 	st.define('x', 'int', VarKind.FIELD)
 	st.define('y', 'int', VarKind.FIELD)
+	st.define('z', 'int', VarKind.FIELD)
 	st.define('pointCount', 'int', VarKind.STATIC)
 
 	st.define('this', 'Point', VarKind.ARG)
 	st.define('other', 'Point', VarKind.ARG)
 	st.define('dx', 'int', VarKind.VAR)
 	st.define('dy', 'int', VarKind.VAR)
+	st.define('dz', 'int', VarKind.VAR)
 	print(st)
+
+	print(st.varCount(VarKind.VAR))
+	print(st.kindOf('dx'))
+	print(st.typeOf('this'))
 
 
 class SymbolTable:
@@ -215,7 +221,7 @@ class SymbolTable:
 		# helper function: printSymbolTable(d: dict)
 		result = 'class-level symbol table:\n'
 		result += displaySymbolTable(self.classTable)
-		result += '\n\n'
+		result += '\n'
 		result += 'subroutine-level symbol table:\n'
 		result += displaySymbolTable(self.srtTable)
 		return result

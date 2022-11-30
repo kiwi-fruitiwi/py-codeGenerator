@@ -1,4 +1,4 @@
-# project 11 compilationEngine: convert to use symbolTables
+# project 11 compilationEngine: convert to use symbolTables. output to XML
 #
 # 	compilationEngine needs fields: class+srt level symbolTables
 # 	reset when appropriate (never for class since each file is a class)
@@ -19,6 +19,8 @@
 # 	goal → output per identifier
 # 		identifier category: var arg static field, class srt
 # 		running index for var arg static field
+#
+# part 2: generating actual code instead of XML
 
 
 from tokenizer import JackTokenizer, TokenType
@@ -64,7 +66,9 @@ class CompilationEngine:
 
 		# ops in the Jack Grammar
 		self.opsList = ['+', '-', '*', '/', '&', '|', '<', '>', '=']
-		pass
+
+		# TODO: initialize symbolTable, which creates empty class+srtTables
+
 
 	def indent(self):
 		self.indentLevel += 1
@@ -109,13 +113,14 @@ class CompilationEngine:
 				...
 
 		follows pattern: class className '{' classVarDec* subroutineDec* '}'
+		TODO: initialize srtTable, classTable
 		"""
 		self.write('<class>\n')
 		self.indent()
 		self.eat('class')  # this will output <keyword> class </keyword>
 
 		# className is an identifier
-		self.compileIdentifier()
+		self.compileIdentifier()  # TODO className
 		self.eat('{')
 
 		while self.compileClassVarDec():
@@ -180,7 +185,7 @@ class CompilationEngine:
 				# process className
 
 				self.skipNextAdvance = True
-				self.compileIdentifier()
+				self.compileIdentifier()  # TODO varName → local
 			case _:
 				raise ValueError(
 					f'did not find identifier or keyword token: {self.tk.getTokenType()}')
@@ -254,7 +259,7 @@ class CompilationEngine:
 			self.__compileType()
 
 		# subroutineName
-		self.compileIdentifier()
+		self.compileIdentifier()  # TODO subroutine name
 
 		# '(' parameterList ')'
 		self.eat('(')
@@ -298,7 +303,7 @@ class CompilationEngine:
 		# otherwise the next symbol MUST be a type: int char bool className
 		# consume: type varName
 		self.__compileType()  # type
-		self.compileIdentifier()  # varName
+		self.compileIdentifier()  # varName TODO symbolTable: argument
 
 		# then while next token is ',', consume type varName
 		self.peek()
@@ -309,7 +314,7 @@ class CompilationEngine:
 		while self.tk.symbol() == ',':
 			self.eat(',')
 			self.__compileType()
-			self.compileIdentifier()
+			self.compileIdentifier()  # TODO symbolTable: argument
 			self.peek()  # check next symbol: ',' or ';'
 
 		self.outdent()
@@ -521,22 +526,22 @@ class CompilationEngine:
 	# the pattern we are targeting is:
 	# 	varName (',' varName)*;
 	# the goal is to implement this repeated handling code once here
-	def __compileVarNameList(self):
+	def __compileVarNameList(self):  # TODO needs class or srt flag
 		# varName
-		self.compileIdentifier()
+		self.compileIdentifier()  # TODO if class: FIELD; if srt: VAR/LOCAL
 		self.peek()  # check ahead to see: ',' or ';' ?
 
 		# (',' varName)*
 		while self.tk.symbol() == ',':
 			self.eat(',')
-			self.compileIdentifier()
+			self.compileIdentifier()  # TODO same as above
 			self.peek()
 
 		# the only token we have left is ';'
 		self.eat(';')
 
 	# eats token = identifier, checks type
-	def compileIdentifier(self):
+	def compileIdentifier(self):  # TODO needs type, kind parameters
 		# we actually don't eat because we're not sure what identifier it is
 		# instead, we advance and assert tokenType
 		self.advance()
@@ -559,7 +564,7 @@ class CompilationEngine:
 		self.eat('let')
 
 		# className, varName, subRName all identifiers ← 'program structure'
-		self.compileIdentifier()
+		self.compileIdentifier()  # TODO symbolTable → must be VarKind.VAR
 
 		# check next token for two options: '[' or '='
 		self.peek()
@@ -839,7 +844,7 @@ class CompilationEngine:
 							# we're at the end of the line!
 							pass
 						case '.':
-							# TODO matches pattern (className | varName).srtName(exprList) in subroutineCall
+							# matches pattern (className | varName).srtName(exprList) in subroutineCall
 							# let key = Keyboard.keyPressed();
 							#
 							# <expression>
@@ -854,13 +859,16 @@ class CompilationEngine:
 							#   </term>
 							# </expression>
 							self.eat('.')
+
+							# TODO is varName if already in symbolTable
+							#  but className if not
 							self.compileIdentifier()
 							self.eat('(')
 							self.compileExpressionList()
 							self.eat(')')
 
 						case '(':
-							# TODO this matches subroutineName(expressionList)
+							# this matches subroutineName(expressionList)
 							self.eat('(')
 							self.compileExpressionList()
 							self.eat(')')
