@@ -20,10 +20,31 @@
 # 		identifier category: var arg static field, class srt
 # 		running index for var arg static field
 #
+#	☒ create compilationEngine constructor symbolTables
+#	☐ at end of compileSubroutine, we want subroutine name
+#		followed by printout of class- and srt-level tables
+#	☐ at end of class compilation: display class-level symbol table
+#
+#	☐ compileIdentifier split into three methods
+#		compileClassName
+#			writes <class name> inside of <identifier> XML tag
+#		compileSubroutineName
+#			writes <subroutine name> inside of <identifier> XML tag
+#		compileVariable(varType, varKind)
+#			invokes self.symbolTables.define(name, type, kind)
+#			name is next token
+#
+#	☐ symbol table output requirements
+#		identifier's name ← already done in p10
+#		identifier's category ← var, arg, static, field, class, subroutine
+#		if category in [var, arg, static, field], running index
+#		identifier defined or used ❔
+#
 # part 2: generating actual code instead of XML
 
 
 from tokenizer import JackTokenizer, TokenType
+from symbolTable import SymbolTable
 
 
 def convertSymbolToHtml(value):
@@ -67,7 +88,8 @@ class CompilationEngine:
 		# ops in the Jack Grammar
 		self.opsList = ['+', '-', '*', '/', '&', '|', '<', '>', '=']
 
-		# TODO: initialize symbolTable, which creates empty class+srtTables
+		# initialize symbolTable, which creates empty class+srtTables
+		self.symbolTables = SymbolTable()
 
 
 	def indent(self):
@@ -132,6 +154,9 @@ class CompilationEngine:
 		self.eat('}')
 		self.outdent()
 		self.write('</class>\n')
+
+		# TODO DEBUG PRINT class-level symbol table
+
 
 	# compiles a static variable or field declaration
 	def compileClassVarDec(self):
