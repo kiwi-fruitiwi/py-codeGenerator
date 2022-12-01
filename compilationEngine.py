@@ -26,9 +26,9 @@
 #	☐ at end of class compilation: display class-level symbol table
 #
 #	☐ compileIdentifier split into three methods
-#		compileClassName
+#		☒ compileClassName
 #			writes <class name> inside of <identifier> XML tag
-#		compileSubroutineName
+#		☒ compileSubroutineName
 #			writes <subroutine name> inside of <identifier> XML tag
 #		compileVariable(varType, varKind)
 #			invokes self.symbolTables.define(name, type, kind)
@@ -44,7 +44,7 @@
 
 
 from tokenizer import JackTokenizer, TokenType
-from symbolTable import SymbolTable
+from symbolTable import SymbolTable, VarKind, Entry
 
 
 def convertSymbolToHtml(value):
@@ -156,7 +156,6 @@ class CompilationEngine:
 		self.write('</class>\n')
 
 		# TODO DEBUG PRINT class-level symbol table
-
 
 	# compiles a static variable or field declaration
 	def compileClassVarDec(self):
@@ -576,6 +575,40 @@ class CompilationEngine:
 
 		# then write <identifier> value </identifier>
 		self.write(f'<identifier> {self.tk.identifier()} </identifier>\n')
+
+	# sub-method of compileIdentifier
+	def compileClassName(self):
+		self.advance()
+		assert self.tk.getTokenType() == TokenType.IDENTIFIER, f'{self.tk.getTokenType()}'
+
+		# skip writing <id> tag with indented <className> tag
+		# code generator will clobber writing XML for code instead
+		self.write(f'<className> {self.tk.identifier()} </className>\n')
+
+	# sub-method of compileIdentifier
+	def compileSubroutineName(self):
+		self.advance()
+		assert self.tk.getTokenType() == TokenType.IDENTIFIER, f'{self.tk.getTokenType()}'
+		self.write(f'<subroutineName> {self.tk.identifier()} </subroutineName>\n')
+
+	# sub-method of compileIdentifier: covers static field arg var
+	def compileVariable(self, vType: str, vKind: VarKind):
+		self.advance()
+		assert self.tk.getTokenType() == TokenType.IDENTIFIER, f'{self.tk.getTokenType()}'
+		tag: str = 'unset'
+
+		match vKind:
+			case VarKind.STATIC:
+				tag = 'staticVariable'
+			case VarKind.FIELD:
+				tag = 'fieldVariable'
+			case VarKind.ARG:
+				tag = 'argumentVariable'
+			case VarKind.VAR:
+				tag = 'localVariable'
+
+		self.symbolTables.define(self.tk.identifier(), vType, vKind)
+		self.write(f'<{tag}> {self.tk.identifier()} </{tag}>')
 
 	def compileLet(self):
 		"""
