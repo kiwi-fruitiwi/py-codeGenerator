@@ -93,7 +93,6 @@ class SymbolTable:
 		self.argCount = 0
 		self.localCount = 0
 
-
 	def startSubroutine(self):
 		"""
 		starts a new subroutine scope, i.e. resets the subroutine's symbol table

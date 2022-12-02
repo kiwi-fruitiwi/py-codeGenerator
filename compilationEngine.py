@@ -25,14 +25,33 @@
 #		followed by printout of class- and srt-level tables
 #	☐ at end of class compilation: display class-level symbol table
 #
-#	☐ compileIdentifier split into three methods
+#	☒ compileIdentifier split into three methods
 #		☒ compileClassName
 #			writes <class name> inside of <identifier> XML tag
 #		☒ compileSubroutineName
 #			writes <subroutine name> inside of <identifier> XML tag
-#		compileVariable(varType, varKind)
+#		☒ compileVariable(varType, varKind)
 #			invokes self.symbolTables.define(name, type, kind)
 #			name is next token
+#	☐ call all three methods appropriate to replace every compileIdentifier call
+#	☐ compileType needs additional argument: variable kind → SFVA
+#		used in: (static field variable/local argument)
+#			classVarDec ← static, field
+#				VarKind.STATIC/FIELD
+#			varDec ← local/var
+#				VarKind.VAR
+#			subRoutineDec ← argument via parameterList, but not before srtName
+#				VarKind.ARGUMENT
+#		example: var Point p1; ← compiler just updates the symbolTable with:
+#			this would be a varDec case: var type varName (, varName)*;
+#				symbolTable.define(name, type, kind) call a result of cpVarDeck
+#					name: varName
+#					type: type
+#					kind: VarKind.VAR
+#			symbolTable.define(p1, Point, VarKind.VAR)
+#		example: static Point p1 ← cpClassVarDec uses VarKind.STATIC
+#		example: field Point p1 ← cpClassVarDec uses VarKind.FIELD
+#
 #
 #	☐ symbol table output requirements
 #		identifier's name ← already done in p10
@@ -89,6 +108,8 @@ class CompilationEngine:
 		self.opsList = ['+', '-', '*', '/', '&', '|', '<', '>', '=']
 
 		# initialize symbolTable, which creates empty class+srtTables
+		# compileClass will overwrite this instantiation but this is useful for
+		# testing methods
 		self.symbolTables = SymbolTable()
 
 
@@ -112,7 +133,6 @@ class CompilationEngine:
 		self.compileClass()
 		# self.compileDo()
 		# self.compileExpression()
-
 		pass
 
 	# compiles a complete class. called after the constructor
@@ -135,14 +155,15 @@ class CompilationEngine:
 				...
 
 		follows pattern: class className '{' classVarDec* subroutineDec* '}'
-		TODO: initialize srtTable, classTable
 		"""
+		self.symbolTables = SymbolTable()
+
 		self.write('<class>\n')
 		self.indent()
 		self.eat('class')  # this will output <keyword> class </keyword>
 
 		# className is an identifier
-		self.compileIdentifier()  # TODO className
+		self.compileClassName()
 		self.eat('{')
 
 		while self.compileClassVarDec():
@@ -156,6 +177,7 @@ class CompilationEngine:
 		self.write('</class>\n')
 
 		# TODO DEBUG PRINT class-level symbol table
+		print(f'{self.symbolTables}')
 
 	# compiles a static variable or field declaration
 	def compileClassVarDec(self):
@@ -194,7 +216,7 @@ class CompilationEngine:
 
 		return True
 
-	# helper method for classVarDec, subroutineDec, parameterList, carDec
+	# helper method for classVarDec, subroutineDec, parameterList, varDec
 	# pattern: int | char | boolean | className
 	def __compileType(self):
 		# type → advance, if TokenType is keyword: int char or boolean
@@ -209,7 +231,8 @@ class CompilationEngine:
 				# process className
 
 				self.skipNextAdvance = True
-				self.compileIdentifier()  # TODO varName → local
+				self.compileClassName()
+
 			case _:
 				raise ValueError(
 					f'did not find identifier or keyword token: {self.tk.getTokenType()}')
