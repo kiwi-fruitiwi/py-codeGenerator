@@ -422,7 +422,7 @@ class CompilationEngine:
 		self.outdent()
 		self.write('</subroutineBody>\n')
 
-	# compiles a var declaration
+	# compiles a var declaration in the format var type varName (, varName)*;
 	def compileVarDec(self):
 		"""
 	    <varDec>
@@ -453,10 +453,10 @@ class CompilationEngine:
 
 		# var type varName
 		self.eat('var')
-		self.__compileType()
+		vType: str = self.__compileType()
 
 		# varName (',' varName)*';'
-		self.__compileVarNameList()
+ 		self.__compileVarNameList(vType, VarKind.VAR)
 		self.outdent()
 		self.write('</varDec>\n')
 
@@ -574,15 +574,15 @@ class CompilationEngine:
 	# the pattern we are targeting is:
 	# 	varName (',' varName)*;
 	# the goal is to implement this repeated handling code once here
-	def __compileVarNameList(self):  # TODO needs class or srt flag
+	def __compileVarNameList(self, vType: str, vKind: VarKind):
 		# varName
-		self.compileIdentifier()  # TODO if class: FIELD; if srt: VAR/LOCAL
+		self.compileVariable(vType, vKind)
 		self.peek()  # check ahead to see: ',' or ';' ?
 
 		# (',' varName)*
 		while self.tk.symbol() == ',':
 			self.eat(',')
-			self.compileIdentifier()  # TODO same as above
+			self.compileVariable(vType, vKind)
 			self.peek()
 
 		# the only token we have left is ';'
