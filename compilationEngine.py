@@ -176,7 +176,6 @@ class CompilationEngine:
 		self.outdent()
 		self.write('</class>\n')
 
-		# TODO DEBUG PRINT class-level symbol table
 		print(f'{self.symbolTables}')
 
 	# compiles a static variable or field declaration
@@ -218,7 +217,8 @@ class CompilationEngine:
 
 	# helper method for classVarDec, subroutineDec, parameterList, varDec
 	# pattern: int | char | boolean | className
-	def __compileType(self):
+	# returns the type in string format!
+	def __compileType(self) -> str:
 		# type → advance, if TokenType is keyword: int char or boolean
 		self.advance()
 
@@ -232,10 +232,10 @@ class CompilationEngine:
 
 				self.skipNextAdvance = True
 				self.compileClassName()
-
 			case _:
 				raise ValueError(
 					f'did not find identifier or keyword token: {self.tk.getTokenType()}')
+		return self.tk.keyWord()
 
 	# compiles a complete method, function, or constructor
 	def compileSubroutineDec(self):
@@ -306,7 +306,7 @@ class CompilationEngine:
 			self.__compileType()
 
 		# subroutineName
-		self.compileIdentifier()  # TODO subroutine name
+		self.compileSubroutineName()
 
 		# '(' parameterList ')'
 		self.eat('(')
@@ -349,8 +349,9 @@ class CompilationEngine:
 
 		# otherwise the next symbol MUST be a type: int char bool className
 		# consume: type varName
-		self.__compileType()  # type
-		self.compileIdentifier()  # varName TODO symbolTable: argument
+		vType: str = self.__compileType()
+
+		self.compileVariable(vType, VarKind.ARG)
 
 		# then while next token is ',', consume type varName
 		self.peek()
@@ -360,8 +361,8 @@ class CompilationEngine:
 		assert self.tk.getTokenType() == TokenType.SYMBOL
 		while self.tk.symbol() == ',':
 			self.eat(',')
-			self.__compileType()
-			self.compileIdentifier()  # TODO symbolTable: argument
+			vType: str = self.__compileType()
+			self.compileVariable(vType, VarKind.ARG)
 			self.peek()  # check next symbol: ',' or ';'
 
 		self.outdent()
@@ -618,6 +619,7 @@ class CompilationEngine:
 	def compileVariable(self, vType: str, vKind: VarKind):
 		self.advance()
 		assert self.tk.getTokenType() == TokenType.IDENTIFIER, f'{self.tk.getTokenType()}'
+		varName = self.tk.identifier()
 		tag: str = 'unset'
 
 		match vKind:
@@ -630,7 +632,7 @@ class CompilationEngine:
 			case VarKind.VAR:
 				tag = 'localVariable'
 
-		self.symbolTables.define(self.tk.identifier(), vType, vKind)
+		self.symbolTables.define(varName, vType, vKind)
 		self.write(f'<{tag}> {self.tk.identifier()} </{tag}>')
 
 	def compileLet(self):
