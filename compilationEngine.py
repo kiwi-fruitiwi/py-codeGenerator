@@ -589,7 +589,7 @@ class CompilationEngine:
 		self.eat(';')
 
 	# eats token = identifier, checks type
-	def compileIdentifier(self):  # TODO needs type, kind parameters
+	def compileIdentifier(self):  # TODO remove this in favor of subtypes
 		# we actually don't eat because we're not sure what identifier it is
 		# instead, we advance and assert tokenType
 		self.advance()
@@ -616,7 +616,7 @@ class CompilationEngine:
 		self.write(f'<subroutineName> {self.tk.identifier()} </subroutineName>\n')
 
 	# sub-method of compileIdentifier: covers static field arg var
-	def compileVariable(self, vType: str, vKind: VarKind):
+	def compileVariable(self, vType: str, vKind: VarKind, define: bool = True):
 		self.advance()
 		assert self.tk.getTokenType() == TokenType.IDENTIFIER, f'{self.tk.getTokenType()}'
 		varName = self.tk.identifier()
@@ -632,8 +632,24 @@ class CompilationEngine:
 			case VarKind.VAR:
 				tag = 'localVariable'
 
-		self.symbolTables.define(varName, vType, vKind)
-		self.write(f'<{tag}> {self.tk.identifier()} </{tag}>')
+		if define:  # variable not yet defined: add to symbol table, write tag
+			self.symbolTables.define(varName, vType, vKind)
+			self.write(f'<{tag}> {varName} </{tag}>')
+		else:
+			# if we're just using the variable, like in a let statement, don't
+			# add a new entry to the symbolTable; verify this pre-defined
+			# variable exists in our symbolTable
+			#  	verify variable existence
+			# 	find VarKind via table lookup using 🦔: st.kindOf
+			# 	output appropriate tag
+			st = self.symbolTables
+			assert st.hasVar(varName)
+
+			k: VarKind = st.kindOf(varName)
+			t: str = st.typeOf(varName)
+			tag: str = k.value
+
+			self.write(f'<{tag}Variable> {varName} </{tag}Variable>')
 
 	def compileLet(self):
 		"""
@@ -647,7 +663,7 @@ class CompilationEngine:
 		self.eat('let')
 
 		# className, varName, subRName all identifiers ← 'program structure'
-		self.compileIdentifier()  # TODO symbolTable → must be VarKind.VAR
+		self.compileVariable()  # TODO symbolTable → must be VarKind.VAR
 
 		# check next token for two options: '[' or '='
 		self.peek()

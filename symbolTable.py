@@ -99,6 +99,13 @@ class SymbolTable:
 		"""
 		self.srtTable = {}
 
+	# returns True if variable exists in either class or srt-level tables
+	def hasVar(self, keyName: str):
+		existsInClass: bool = keyName in self.classTable.keys()
+		existsInSubroutine: bool = keyName in self.srtTable.keys()
+
+		return existsInSubroutine or existsInClass
+
 
 	def define(self, name: str, vType: str, kind: VarKind):
 		"""
