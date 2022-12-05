@@ -112,7 +112,6 @@ class CompilationEngine:
 		# testing methods
 		self.symbolTables = SymbolTable()
 
-
 	def indent(self):
 		self.indentLevel += 1
 
@@ -170,6 +169,7 @@ class CompilationEngine:
 			continue  # probably unnecessary continue; empty body
 
 		while self.compileSubroutineDec():
+			print(f'{self.symbolTables}')
 			continue
 
 		self.eat('}')
@@ -201,15 +201,24 @@ class CompilationEngine:
 		if self.tk.keyWord() not in ['static', 'field']:
 			return False
 
+		vKind: VarKind = None
+		match self.tk.keyWord():
+			case 'static':
+				vKind = VarKind.STATIC
+			case 'field':
+				vKind = VarKind.FIELD
+			case _:
+				raise ValueError(f'unexpected vKind. expected static or field')
+
 		self.write('<classVarDec>\n')
 		self.indent()
 
 		self.advance()
 		self.write(f'<keyword> {self.tk.keyWord()} </keyword>\n')
-		self.__compileType()
+		vType: str = self.__compileType()
 
 		# varName(',' varName)*
-		self.__compileVarNameList()
+		self.__compileVarNameList(vType, vKind)
 		self.outdent()
 		self.write('</classVarDec>\n')
 
@@ -223,19 +232,17 @@ class CompilationEngine:
 		self.advance()
 
 		match self.tk.getTokenType():
-			case TokenType.KEYWORD:
-				# process int, char, boolean
+			case TokenType.KEYWORD:  # process int, char, boolean
 				assert self.tk.keyWord() in ['int', 'char', 'boolean'], f'{self.tk.keyWord()}'
 				self.write(f'<keyword> {self.tk.keyWord()} </keyword>\n')
-			case TokenType.IDENTIFIER:
-				# process className
-
+				return self.tk.keyWord()
+			case TokenType.IDENTIFIER:  # process className
 				self.skipNextAdvance = True
 				self.compileClassName()
+				return self.tk.identifier()
 			case _:
 				raise ValueError(
 					f'did not find identifier or keyword token: {self.tk.getTokenType()}')
-		return self.tk.keyWord()
 
 	# compiles a complete method, function, or constructor
 	def compileSubroutineDec(self):
@@ -456,7 +463,7 @@ class CompilationEngine:
 		vType: str = self.__compileType()
 
 		# varName (',' varName)*';'
- 		self.__compileVarNameList(vType, VarKind.VAR)
+		self.__compileVarNameList(vType, VarKind.VAR)
 		self.outdent()
 		self.write('</varDec>\n')
 
@@ -613,7 +620,8 @@ class CompilationEngine:
 	def compileSubroutineName(self):
 		self.advance()
 		assert self.tk.getTokenType() == TokenType.IDENTIFIER, f'{self.tk.getTokenType()}'
-		self.write(f'<subroutineName> {self.tk.identifier()} </subroutineName>\n')
+		self.write(
+			f'<subroutineName> {self.tk.identifier()} </subroutineName>\n')
 
 	# compile a variable already known to be defined in our symbolTables
 	# used for compileLet, term?
@@ -930,7 +938,8 @@ class CompilationEngine:
 					# regardless, it must be static, field, argument, local
 					kind: VarKind = self.symbolTables.kindOf(identifier)
 					tag: str = kind.value  # e.g. static field argument local
-					self.write(f'<{tag}Variable> {identifier} </{tag}Variable>\n')
+					self.write(
+						f'<{tag}Variable> {identifier} </{tag}Variable>\n')
 
 				# we need to advance one more time to check 4 LL2 cases
 				#   foo ← varName
@@ -1007,7 +1016,8 @@ class CompilationEngine:
 							pass
 
 						case _:
-							raise ValueError(f'invalid symbol in term LL2: {advTokenValue}')
+							raise ValueError(
+								f'invalid symbol in term LL2: {advTokenValue}')
 
 			case TokenType.SYMBOL:
 				value = self.tk.symbol()
@@ -1098,11 +1108,11 @@ class CompilationEngine:
 		# while next symbol is an op: compile the term that follows and check
 		# for another op!
 		while self.tk.getTokenType() == TokenType.SYMBOL and \
-			self.tk.symbol() in self.opsList:
-
+				self.tk.symbol() in self.opsList:
 			# eat it
 			self.advance()
-			self.write(f'<symbol> {convertSymbolToHtml(self.tk.symbol())} </symbol>\n')
+			self.write(
+				f'<symbol> {convertSymbolToHtml(self.tk.symbol())} </symbol>\n')
 
 			# compile the next term in pattern: op term
 			self.compileTerm()

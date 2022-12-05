@@ -238,4 +238,4 @@ class SymbolTable:
 
 
 
-testSymbolTables()
+# testSymbolTables()
