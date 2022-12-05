@@ -878,8 +878,12 @@ class CompilationEngine:
 	# term and should not be advanced over.
 	def compileTerm(self):
 		"""
-		pattern: intConst | strConst | keywordConst | varName |
-			varName'['expression']' | subroutineCall | '('expression')' |
+		pattern:
+			intConst | strConst | keywordConst |
+			varName |
+			varName'['expression']' |
+			subroutineCall |
+			'('expression')' |
 			unaryOp term
 
 		unaryOp is ['-', '~']
@@ -893,9 +897,11 @@ class CompilationEngine:
 		match self.tk.getTokenType():
 			case TokenType.IDENTIFIER:
 				self.advance()
-				value = self.tk.identifier()
+				identifier: str = self.tk.identifier()
+				classOrSrtName: bool = False
 
-				# TODO what identifier is this? use st.kindOf with {value}
+				# can remove this comment block when everything works:
+				# what identifier is this? use st.kindOf with {value}
 				#  (static|field|argument|local)Variable tag
 				#  .
 				#  varName ← already defined
@@ -905,7 +911,26 @@ class CompilationEngine:
 				#		if not symbolTables.hasVar: className, else varName
 				#		srtName is guaranteed → compileSubroutineName()
 
-				self.write(f'<identifier> {value} </identifier>\n')
+				# it's an identifier not in our symbolTables:
+				# this means it's a className or subRoutineName
+				# this only happens in Jack Grammar: subroutineCall
+				#	subroutineName(expressionList)
+				#	(className|varName).subroutineName(expressionList)
+				if not self.symbolTables.hasVar(identifier):
+					# set a classOrSrtName flag and skip self.write for now
+					# → check LL2 for next token
+					# 	case '(': write <srtName> as tag
+					#	case '.': must be className → '.' → srtName
+					classOrSrtName = True
+				else:
+					# it's an identifier in our symbolTables! these cases apply:
+					# 	varName
+					#	varName[expression]
+					#	varName.subroutineName(expressionList)
+					# regardless, it must be static, field, argument, local
+					kind: VarKind = self.symbolTables.kindOf(identifier)
+					tag: str = kind.value  # e.g. static field argument local
+					self.write(f'<{tag}Variable> {identifier} </{tag}Variable>\n')
 
 				# we need to advance one more time to check 4 LL2 cases
 				#   foo ← varName
@@ -914,17 +939,19 @@ class CompilationEngine:
 				#		foo.bar'('expressionList')'
 				#		bar'('expressionList')'
 				self.peek()
-
 				tokenType = self.tk.getTokenType()
 				if tokenType == TokenType.SYMBOL:
 					advTokenValue = self.tk.symbol()
 					match advTokenValue:
 						case ';' | ')':
-							# we're at the end of the line!
+							# we're at the end of the line! we can stop here
 							pass
 						case '.':
-							# matches pattern (className | varName).srtName(exprList) in subroutineCall
-							# let key = Keyboard.keyPressed();
+							# matches pattern in subroutineCall:
+							# 	(className | varName).srtName(exprList)
+							#
+							# example:
+							# 	let key = Keyboard.keyPressed();
 							#
 							# <expression>
 							#   <term>
@@ -939,21 +966,30 @@ class CompilationEngine:
 							# </expression>
 							self.eat('.')
 
-							# TODO is varName if already in symbolTable
-							#  but className if not
-							self.compileIdentifier()
+							# remember that flag we set earlier?
+							# in case '.' it can only be a class
+							if classOrSrtName:
+								self.write(
+									f'<className> {identifier} </className>\n')
+							else:
+								# not className means it must be varName
+								# we already output this varName in LL1 clause
+								pass
+
+							self.compileSubroutineName()
 							self.eat('(')
 							self.compileExpressionList()
 							self.eat(')')
 
-						case '(':
-							# this matches subroutineName(expressionList)
+						case '(':  # must match subroutineName(expressionList)
+							assert classOrSrtName
+							self.compileSubroutineName()
 							self.eat('(')
 							self.compileExpressionList()
 							self.eat(')')
 
-						case '[':
-							# TODO process varName[expression]
+						case '[':  # matches varName[expression]
+							assert not classOrSrtName
 							self.eat('[')
 							self.compileExpression()
 							self.eat(']')
@@ -963,11 +999,11 @@ class CompilationEngine:
 							pass
 
 						# this is the next token for expressionList
-						case ',':
+						case ',':  # TODO is this needed?
 							pass
 
 						# closing array bracket for our simple term
-						case ']':
+						case ']':  # TODO is this needed?
 							pass
 
 						case _:
