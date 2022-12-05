@@ -692,9 +692,9 @@ class CompilationEngine:
 
 		self.eat('=')
 
-		# TODO # for expressionLess, use term: id, strC, intC
-		# TODO can also be true, false, null, this ← keywords!
-		# actually these are both taken care of in compileExpr,Term
+		# for expressionLess, use term: id, strC, intC
+		# can also be true, false, null, this ← keywords!
+		# → actually, these are both taken care of in compileExpr,Term
 		self.compileExpression()
 		self.eat(';')
 
@@ -871,44 +871,6 @@ class CompilationEngine:
 			self.outdent()
 			self.write('</returnStatement>\n')
 
-	# the expressionless tests for project 10 use simplified 'term' tokens
-	# that can only be single identifiers or the keyword 'this'.
-	def compileSimpleTerm(self):
-		# the simple version of this rule is identifier | 'this' ←🦔
-
-		self.write('<term>\n')
-		self.indent()
-		self.advance()
-		value = None
-
-		match self.tk.getTokenType():
-			case TokenType.IDENTIFIER:
-				value = self.tk.identifier()
-				self.write(f'<identifier> {value} </identifier>\n')
-			case TokenType.KEYWORD:
-				assert self.tk.keyWord() in ['this', 'false', 'true', 'null']
-				value = self.tk.keyWord()
-				self.write(f'<keyword> {value} </keyword>\n')
-
-			# adding extra cases: integer and string constant
-			case TokenType.INT_CONST:
-				value = self.tk.intVal()
-				self.write(f'<integerConstant> {value} </integerConstant>\n')
-			case TokenType.STRING_CONST:
-				value = self.tk.stringVal()
-				self.write(f'<stringConstant> {value} </stringConstant>\n')
-
-			# TODO technically we do unaryOp term here
-			case TokenType.SYMBOL:
-				value = convertSymbolToHtml(self.tk.symbol())
-				self.write(f'<symbol> {value} </symbol>\n')
-			case _:
-				raise ValueError(
-					f'simple term was not an identifier or keywordConstant: {self.tk.getTokenType()}→{value}')
-
-		self.outdent()
-		self.write('</term>\n')
-
 	# compiles a term. if the current token is an identifier, the routine must
 	# distinguish between a variable, an array entry, or a subroutine call. a
 	# single look-ahead token, which may be one of [, (, or ., suffices to
@@ -932,6 +894,17 @@ class CompilationEngine:
 			case TokenType.IDENTIFIER:
 				self.advance()
 				value = self.tk.identifier()
+
+				# TODO what identifier is this? use st.kindOf with {value}
+				#  (static|field|argument|local)Variable tag
+				#  .
+				#  varName ← already defined
+				#  varName[expr]
+				#  srtCall(exprList)
+				#  className|varName.srtName(exprList)
+				#		if not symbolTables.hasVar: className, else varName
+				#		srtName is guaranteed → compileSubroutineName()
+
 				self.write(f'<identifier> {value} </identifier>\n')
 
 				# we need to advance one more time to check 4 LL2 cases
