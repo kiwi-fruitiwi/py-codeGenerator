@@ -351,7 +351,7 @@ class CompilationEngine:
 		# consume: type varName
 		vType: str = self.__compileType()
 
-		self.compileVariable(vType, VarKind.ARG)
+		self.compileUndefinedVariable(vType, VarKind.ARG)
 
 		# then while next token is ',', consume type varName
 		self.peek()
@@ -362,7 +362,7 @@ class CompilationEngine:
 		while self.tk.symbol() == ',':
 			self.eat(',')
 			vType: str = self.__compileType()
-			self.compileVariable(vType, VarKind.ARG)
+			self.compileUndefinedVariable(vType, VarKind.ARG)
 			self.peek()  # check next symbol: ',' or ';'
 
 		self.outdent()
@@ -576,13 +576,13 @@ class CompilationEngine:
 	# the goal is to implement this repeated handling code once here
 	def __compileVarNameList(self, vType: str, vKind: VarKind):
 		# varName
-		self.compileVariable(vType, vKind)
+		self.compileUndefinedVariable(vType, vKind)
 		self.peek()  # check ahead to see: ',' or ';' ?
 
 		# (',' varName)*
 		while self.tk.symbol() == ',':
 			self.eat(',')
-			self.compileVariable(vType, vKind)
+			self.compileUndefinedVariable(vType, vKind)
 			self.peek()
 
 		# the only token we have left is ';'
@@ -615,8 +615,30 @@ class CompilationEngine:
 		assert self.tk.getTokenType() == TokenType.IDENTIFIER, f'{self.tk.getTokenType()}'
 		self.write(f'<subroutineName> {self.tk.identifier()} </subroutineName>\n')
 
+	# compile a variable already known to be defined in our symbolTables
+	# used for compileLet, term?
+	def compileDefinedVariable(self):
+		self.advance()
+		assert self.tk.getTokenType() == TokenType.IDENTIFIER, f'{self.tk.getTokenType()}'
+		varName = self.tk.identifier()
+
+		# if we're just using the variable, like in a let statement, don't
+		# add a new entry to the symbolTable; verify this pre-defined
+		# variable exists in our symbolTable
+		#  	verify variable existence
+		# 	find VarKind via table lookup using 🦔: st.kindOf
+		# 	output appropriate tag
+		st = self.symbolTables
+		assert st.hasVar(varName)
+
+		k: VarKind = st.kindOf(varName)
+		t: str = st.typeOf(varName)
+		tag: str = k.value
+
+		self.write(f'<{tag}Variable> {varName} </{tag}Variable>')
+
 	# sub-method of compileIdentifier: covers static field arg var
-	def compileVariable(self, vType: str, vKind: VarKind, define: bool = True):
+	def compileUndefinedVariable(self, vType: str, vKind: VarKind):
 		self.advance()
 		assert self.tk.getTokenType() == TokenType.IDENTIFIER, f'{self.tk.getTokenType()}'
 		varName = self.tk.identifier()
@@ -632,24 +654,9 @@ class CompilationEngine:
 			case VarKind.VAR:
 				tag = 'localVariable'
 
-		if define:  # variable not yet defined: add to symbol table, write tag
-			self.symbolTables.define(varName, vType, vKind)
-			self.write(f'<{tag}> {varName} </{tag}>')
-		else:
-			# if we're just using the variable, like in a let statement, don't
-			# add a new entry to the symbolTable; verify this pre-defined
-			# variable exists in our symbolTable
-			#  	verify variable existence
-			# 	find VarKind via table lookup using 🦔: st.kindOf
-			# 	output appropriate tag
-			st = self.symbolTables
-			assert st.hasVar(varName)
-
-			k: VarKind = st.kindOf(varName)
-			t: str = st.typeOf(varName)
-			tag: str = k.value
-
-			self.write(f'<{tag}Variable> {varName} </{tag}Variable>')
+		# variable not yet defined: add to symbol table, write tag
+		self.symbolTables.define(varName, vType, vKind)
+		self.write(f'<{tag}> {varName} </{tag}>')
 
 	def compileLet(self):
 		"""
@@ -663,7 +670,7 @@ class CompilationEngine:
 		self.eat('let')
 
 		# className, varName, subRName all identifiers ← 'program structure'
-		self.compileVariable()  # TODO symbolTable → must be VarKind.VAR
+		self.compileDefinedVariable()
 
 		# check next token for two options: '[' or '='
 		self.peek()
