@@ -307,9 +307,10 @@ class CompilationEngine:
 		# ('void'|type)
 		self.peek()
 
-		if self.tk.getTokenType() == TokenType.KEYWORD:
+		# must be void, int, char, boolean, or className
+		if self.tk.getTokenType() == TokenType.KEYWORD and self.tk.keyWord() == 'void':
 			self.eat('void')
-		else:
+		else:  # it must be int, char, boolean, or className, aka 'type'
 			self.__compileType()
 
 		# subroutineName
@@ -643,7 +644,7 @@ class CompilationEngine:
 		t: str = st.typeOf(varName)
 		tag: str = k.value
 
-		self.write(f'<{tag}Variable> {varName} </{tag}Variable>')
+		self.write(f'<{tag}Variable> {varName} </{tag}Variable>\n')
 
 	# sub-method of compileIdentifier: covers static field arg var
 	def compileUndefinedVariable(self, vType: str, vKind: VarKind):
