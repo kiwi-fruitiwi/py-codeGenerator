@@ -120,7 +120,7 @@ class SymbolTable:
 		"""
 		# assert no duplicate variable names
 		assert name not in self.classTable.keys(), f'duplicate id: {name}'
-		assert name not in self.srtTable.keys()
+		assert name not in self.srtTable.keys(), f'{name} duplicate found'
 
 		# find how many of this kind we have so far
 		currentCount = self.varCount(kind)
@@ -164,7 +164,6 @@ class SymbolTable:
 				return self.localCount
 
 		raise ValueError(f'{kind} not found')
-
 
 	def kindOf(self, name: str):
 		"""

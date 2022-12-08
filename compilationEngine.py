@@ -250,6 +250,9 @@ class CompilationEngine:
 		:return: True if we found a subroutineDec, False if not.
 			this is so we can use while self.compileSubroutineDec
 		"""
+		# clear our subroutine symbol table
+		self.symbolTables.startSubroutine()
+
 		# skipNextAdvOnEat because we might fail to find a subroutineDec
 		self.peek()
 
@@ -310,7 +313,7 @@ class CompilationEngine:
 		# must be void, int, char, boolean, or className
 		if self.tk.getTokenType() == TokenType.KEYWORD and self.tk.keyWord() == 'void':
 			self.eat('void')
-		else:  # it must be int, char, boolean, or className, aka 'type'
+		else:  # it must be int, char, boolean, or className, aka 'type'$
 			self.__compileType()
 
 		# subroutineName
