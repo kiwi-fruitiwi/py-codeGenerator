@@ -50,10 +50,14 @@ class Entry:
 
 
 def displaySymbolTable(table: Dict):
-	result = ""
+	result = ''
 	for key in table.keys():
 		result += f'  {key}: {table[key]}\n'
-	return result
+
+	if result == '':
+		return '\tempty\n'
+	else:
+		return result
 
 
 def testSymbolTables():
@@ -88,16 +92,18 @@ class SymbolTable:
 		self.srtTable: Dict[str, Entry] = {}
 
 		# counts for all variable kinds
-		self.staticCount = 0
-		self.fieldCount = 0
-		self.argCount = 0
-		self.localCount = 0
+		self.staticCount = 0	# class-level
+		self.fieldCount = 0		# class-level
+		self.argCount = 0		# subroutine-level
+		self.localCount = 0		# subroutine-level
 
 	def startSubroutine(self):
 		"""
 		starts a new subroutine scope, i.e. resets the subroutine's symbol table
 		"""
 		self.srtTable = {}
+		self.argCount = 0
+		self.localCount = 0
 
 	# returns True if variable exists in either class or srt-level tables
 	def hasVar(self, keyName: str):
