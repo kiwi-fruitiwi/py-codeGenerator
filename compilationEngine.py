@@ -169,7 +169,6 @@ class CompilationEngine:
 			continue  # probably unnecessary continue; empty body
 
 		while self.compileSubroutineDec():
-			print(f'{self.symbolTables}')
 			continue
 
 		self.eat('}')
@@ -258,9 +257,9 @@ class CompilationEngine:
 
 		# if compileSubroutineDec is being called, it must start with:
 		# 'constructor', 'function', or 'method'
-		# so if it doesn't, we can return False
+		# so if it doesn't, we know compileClass's subRoutineDec* clause is done
+		# and we can return False
 		if self.tk.getTokenType() != TokenType.KEYWORD:
-			print(f'compileSrtDec → {self.tk.getTokenType()}')
 			return False
 		else:
 			keywordValue = self.tk.keyWord()
@@ -317,15 +316,17 @@ class CompilationEngine:
 			self.__compileType()
 
 		# subroutineName
-		self.compileSubroutineName()
+		subroutineName = self.compileSubroutineName()
 
 		# '(' parameterList ')'
 		self.eat('(')
 		self.compileParameterList()
 		self.eat(')')
 
-		# subroutineBody
+		# subroutineBody → { varDec* statements }
 		self.compileSubroutineBody()
+		print(self.symbolTables.tableStringWithSrtName(subroutineName))
+
 		self.outdent()
 		self.write('</subroutineDec>\n')
 
@@ -621,11 +622,13 @@ class CompilationEngine:
 		self.write(f'<className> {self.tk.identifier()} </className>\n')
 
 	# sub-method of compileIdentifier
-	def compileSubroutineName(self):
+	# returns subroutine's name
+	def compileSubroutineName(self) -> str:
 		self.advance()
 		assert self.tk.getTokenType() == TokenType.IDENTIFIER, f'{self.tk.getTokenType()}'
 		self.write(
 			f'<subroutineName> {self.tk.identifier()} </subroutineName>\n')
+		return self.tk.identifier()
 
 	# compile a variable already known to be defined in our symbolTables
 	# used for compileLet, term?
