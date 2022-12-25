@@ -175,7 +175,7 @@ class CompilationEngine:
 		self.outdent()
 		self.write('</class>\n')
 
-		print(f'{self.symbolTables}')
+		print(f'\n{self.symbolTables.getClassLevelSymTable()}')
 
 	# compiles a static variable or field declaration
 	def compileClassVarDec(self):
@@ -325,7 +325,7 @@ class CompilationEngine:
 
 		# subroutineBody → { varDec* statements }
 		self.compileSubroutineBody()
-		print(self.symbolTables.tableStringWithSrtName(subroutineName))
+		print(self.symbolTables.getSrtLevelSymTable(subroutineName))
 
 		self.outdent()
 		self.write('</subroutineDec>\n')

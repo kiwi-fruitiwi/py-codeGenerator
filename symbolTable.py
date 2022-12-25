@@ -230,21 +230,20 @@ class SymbolTable:
 	def __repr__(self):
 		# iterate through both tables and display them
 		# helper function: printSymbolTable(d: dict)
-		result = 'class-level symbol table:\n'
-		result += displaySymbolTable(self.classTable)
-		result += '\n'
-		result += 'subroutine-level symbol table:\n'
-		result += displaySymbolTable(self.srtTable)
+		result = self.getClassLevelSymTable() + '\n'
+		result += self.getSrtLevelSymTable('unspecified')
 		return result
 
-	# prints class-level and subroutine-level symbol table with srt's name
-	def tableStringWithSrtName(self, srtName: str) -> str:
-		# iterate through both tables and display them
-		# helper function: printSymbolTable(d: dict)
+	def getClassLevelSymTable(self) -> str:
 		result = 'class-level symbol table:\n'
 		result += displaySymbolTable(self.classTable)
-		result += '\n'
-		result += f'subroutine-level symbol table: →{srtName}←\n'
+		return result
+
+	# returns subroutine-level symbol table with srt's name
+	def getSrtLevelSymTable(self, srtName: str) -> str:
+		# iterate through both tables and display them
+		# helper function: printSymbolTable(d: dict)
+		result = f'subroutine-level symbol table: →{srtName}←\n'
 		result += displaySymbolTable(self.srtTable)
 		return result
 
