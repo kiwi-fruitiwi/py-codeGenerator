@@ -325,7 +325,7 @@ class CompilationEngine:
 
 		# subroutineBody → { varDec* statements }
 		self.compileSubroutineBody()
-		print(self.symbolTables.getSrtLevelSymTable(subroutineName))
+		print(f'\n{self.symbolTables.getSrtLevelSymTable(subroutineName)}')
 
 		self.outdent()
 		self.write('</subroutineDec>\n')

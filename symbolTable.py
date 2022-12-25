@@ -49,17 +49,6 @@ class Entry:
 		return f'[{self.type}, {self.kind}, {self.quantity}]'
 
 
-def displaySymbolTable(table: Dict):
-	result = ''
-	for key in table.keys():
-		result += f'  {key}: {table[key]}\n'
-
-	if result == '':
-		return '\tempty\n'
-	else:
-		return result
-
-
 def testSymbolTables():
 	st = SymbolTable()
 
@@ -235,7 +224,7 @@ class SymbolTable:
 		return result
 
 	def getClassLevelSymTable(self) -> str:
-		result = 'class-level symbol table:\n'
+		result = '🔥 class-level symbol table:\n'
 		result += displaySymbolTable(self.classTable)
 		return result
 
@@ -243,13 +232,24 @@ class SymbolTable:
 	def getSrtLevelSymTable(self, srtName: str) -> str:
 		# iterate through both tables and display them
 		# helper function: printSymbolTable(d: dict)
-		result = f'subroutine-level symbol table: →{srtName}←\n'
+		result = f'🐳 subroutine-level symbol table: {srtName}\n'
 		result += displaySymbolTable(self.srtTable)
 		return result
 
 
+def displaySymbolTable(table: Dict):
+	result = ''
 
+	# TODO: variable width indented table
+	#   iterate through keys and record max key length
+	#   use this as the padding value
 
+	for key in table.keys():
+		result += f'\t{key: >14} → {table[key]}\n'
+	if result == '':
+		return '\tempty\n'
+	else:
+		return result
 
 
 # testSymbolTables()
