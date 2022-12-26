@@ -310,6 +310,12 @@ class CompilationEngine:
 		keywordValue = self.tk.keyWord()
 		self.write(f'<keyword> {keywordValue} </keyword>\n')
 
+		# if we have a method or constructor, add 'this' to the srt symbol table
+		# 	to do this we call self.symbolTable.define(name, vType, kind) with:
+		# 		name=this, vType=what the class is, kind=argument
+		# probably not necessary for constructor, but let's start with it in
+		if keywordValue in ['method', 'constructor']:
+			print(f'🥝 {keywordValue} detected in __subroutineDecHelper')
 
 
 		# ('void'|type)
@@ -331,7 +337,7 @@ class CompilationEngine:
 
 		# subroutineBody → { varDec* statements }
 		self.compileSubroutineBody()
-		print(f'\nclassName: {self.className} → {self.symbolTables.getSrtLevelSymTable(subroutineName)}')
+		print(f'\n{self.symbolTables.getSrtLevelSymTable(subroutineName)}')
 
 		self.outdent()
 		self.write('</subroutineDec>\n')
