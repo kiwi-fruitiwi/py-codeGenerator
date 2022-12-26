@@ -112,6 +112,10 @@ class CompilationEngine:
 		# testing methods
 		self.symbolTables = SymbolTable()
 
+		# keeps track of the class's name because it's a variable type for our
+		# symbol tables. notably, it's used for 'this' in subRoutineDec
+		self.className = 'not yet set'
+
 	def indent(self):
 		self.indentLevel += 1
 
@@ -306,6 +310,8 @@ class CompilationEngine:
 		keywordValue = self.tk.keyWord()
 		self.write(f'<keyword> {keywordValue} </keyword>\n')
 
+
+
 		# ('void'|type)
 		self.peek()
 
@@ -325,7 +331,7 @@ class CompilationEngine:
 
 		# subroutineBody → { varDec* statements }
 		self.compileSubroutineBody()
-		print(f'\n{self.symbolTables.getSrtLevelSymTable(subroutineName)}')
+		print(f'\nclassName: {self.className} → {self.symbolTables.getSrtLevelSymTable(subroutineName)}')
 
 		self.outdent()
 		self.write('</subroutineDec>\n')
@@ -616,6 +622,9 @@ class CompilationEngine:
 	def compileClassName(self):
 		self.advance()
 		assert self.tk.getTokenType() == TokenType.IDENTIFIER, f'{self.tk.getTokenType()}'
+
+		# remember the class name for later symbol table usage
+		self.className = self.tk.identifier()
 
 		# skip writing <id> tag with indented <className> tag
 		# code generator will clobber writing XML for code instead
