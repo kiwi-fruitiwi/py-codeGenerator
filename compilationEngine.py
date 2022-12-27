@@ -165,6 +165,11 @@ class CompilationEngine:
 		self.indent()
 		self.eat('class')  # this will output <keyword> class </keyword>
 
+		self.peek()  # look ahead to set the className field
+		# remember the class name for later symbol table usage
+		assert self.tk.getTokenType() == TokenType.IDENTIFIER
+		self.className = self.tk.identifier()
+
 		# className is an identifier
 		self.compileClassName()
 		self.eat('{')
@@ -315,8 +320,7 @@ class CompilationEngine:
 		# 		name=this, vType=what the class is, kind=argument
 		# probably not necessary for constructor, but let's start with it in
 		if keywordValue in ['method', 'constructor']:
-			print(f'🥝 {keywordValue} detected in __subroutineDecHelper')
-
+			self.symbolTables.define('this', self.className, VarKind.ARG)
 
 		# ('void'|type)
 		self.peek()
@@ -628,9 +632,6 @@ class CompilationEngine:
 	def compileClassName(self):
 		self.advance()
 		assert self.tk.getTokenType() == TokenType.IDENTIFIER, f'{self.tk.getTokenType()}'
-
-		# remember the class name for later symbol table usage
-		self.className = self.tk.identifier()
 
 		# skip writing <id> tag with indented <className> tag
 		# code generator will clobber writing XML for code instead
