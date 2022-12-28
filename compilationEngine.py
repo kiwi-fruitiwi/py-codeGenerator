@@ -979,6 +979,9 @@ class CompilationEngine:
 							# we're at the end of the line! we can stop here
 							pass
 						case '.':
+							# remember that flag we set earlier?
+							# in case '.' it can only be a class
+
 							# matches pattern in subroutineCall:
 							# 	(className | varName).srtName(exprList)
 							#
@@ -996,10 +999,6 @@ class CompilationEngine:
 							#     <symbol> ) </symbol>
 							#   </term>
 							# </expression>
-							self.eat('.')
-
-							# remember that flag we set earlier?
-							# in case '.' it can only be a class
 							if classOrSrtName:
 								self.write(
 									f'<className> {identifier} </className>\n')
@@ -1007,6 +1006,7 @@ class CompilationEngine:
 								# not className means it must be varName
 								# we already output this varName in LL1 clause
 								pass
+							self.eat('.')
 
 							self.compileSubroutineName()
 							self.eat('(')
