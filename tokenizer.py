@@ -59,6 +59,9 @@ class JackTokenizer:
 		self.currentIntConstValue = None
 		self.currentKeyWordValue = None
 
+		# flag: true if we want our debug output to display in the console
+		self.debug = False
+
 		self.symbols = "{}[]().,;+-*/&|<>=~"
 		self.digits = "0123456789"  # for integer constants
 		self.keywords = [
@@ -194,7 +197,7 @@ class JackTokenizer:
 		self.i += 1
 
 		# debug print
-		print(f'symbol → {sym}')
+		self.debugOutput(f'symbol → {sym}')
 
 	# helper function to process string constants
 	def __processStringConstant(self):
@@ -208,7 +211,7 @@ class JackTokenizer:
 		self.i += len(self.currentStrConstValue) + 2
 
 		# debug print
-		print(f'stringConstant → {self.currentStrConstValue}')
+		self.debugOutput(f'stringConstant → {self.currentStrConstValue}')
 
 	# helper function to process keywords and identifiers
 	def __processKeywordIdentifier(self):
@@ -223,14 +226,14 @@ class JackTokenizer:
 			self.currentKeyWordValue = stringBuilder
 
 			# debug print
-			print(f'keyword → {self.currentKeyWordValue}')
+			self.debugOutput(f'keyword → {self.currentKeyWordValue}')
 		else:
 			# 🏭 detect identifier; imperfect as we'd need checks on valid chars
 			self.currentTokenType = TokenType.IDENTIFIER
 			self.currentIdentifierValue = stringBuilder
 
 			# debug print
-			print(f'identifier → {self.currentIdentifierValue}')
+			self.debugOutput(f'identifier → {self.currentIdentifierValue}')
 			# print(f'{self.currentTokenType}')
 
 	# helper function to process integer constant tokens
@@ -251,7 +254,7 @@ class JackTokenizer:
 		self.currentIntConstValue = intBuilder
 
 		# debug print
-		print(f'intConstant → {self.currentIntConstValue}')
+		self.debugOutput(f'intConstant → {self.currentIntConstValue}')
 
 	# returns true if next char is ⎵, \n, symbol
 	def __isDelimiter(self, char: str):
@@ -288,3 +291,8 @@ class JackTokenizer:
 	def stringVal(self):
 		assert self.currentTokenType == TokenType.STRING_CONST
 		return self.currentStrConstValue
+
+	# print some string to console only if the debug flag is True
+	def debugOutput(self, s: str):
+		if self.debug:
+			print(s)
