@@ -687,7 +687,7 @@ class CompilationEngine:
 
 		# variable not yet defined: add to symbol table, write tag
 		self.symbolTables.define(varName, vType, vKind)
-		self.write(f'<{tag}> {varName} </{tag}>')
+		self.write(f'<{tag}> {varName} </{tag}>\n')
 
 	def compileLet(self):
 		"""

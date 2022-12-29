@@ -57,7 +57,7 @@ class PongGame {
         return instance;
     }
 
-    /** Starts the game, and andles inputs from the user that control
+    /** Starts the game, and handles inputs from the user that control
      *  the bat's movement direction. */
     method void run() {
         var char key;
