@@ -178,7 +178,10 @@ class CompilationEngine:
 			continue  # probably unnecessary continue; empty body
 
 		while self.compileSubroutineDec():
+			# TODO: remove temporary extra newline for ease of reading
+			self.write('\n')
 			continue
+
 
 		self.eat('}')
 		self.outdent()
@@ -556,7 +559,7 @@ class CompilationEngine:
 		# ✒note! currently statements always ends with '}'
 		while self.__compileStatement():
 			# empty because we want to stop when it returns false
-			continue  # probably not necessary
+			pass  # probably not necessary
 
 		self.outdent()
 		self.write('</statements>\n')
@@ -573,6 +576,7 @@ class CompilationEngine:
 		# if compileStatement is being called, tokenType must be one of
 		# {let, if, while, do, return}
 		if self.tk.getTokenType() != TokenType.KEYWORD:
+			# print(f'🌌 statement ended with {self.tk.getTokenType()}: {self.tk.symbol()}')
 			return False
 		else:
 			match self.tk.keyWord():
@@ -768,16 +772,18 @@ class CompilationEngine:
 		self.__compileStatementsWithinBrackets()
 
 		# (else '{' statements '}')?
-		self.advance()  # check for else token
+		self.peek()  # check for else token
 		if self.tk.getTokenType() == TokenType.KEYWORD:
 			if self.tk.keyWord() == 'else':
-				self.write('<keyword> else </keyword>\n')
+				self.write('<elseStatement>\n')
+				self.indent()
+				self.eat('else')
 				self.__compileStatementsWithinBrackets()
-			else:  # we've already advanced once to check the else keyword
-				self.skipNextAdvance = True
+				self.outdent()
+				self.write('</elseStatement>\n')
 
-		self.write('</ifStatement>\n')
 		self.outdent()
+		self.write('</ifStatement>\n')
 
 	def __compileExprWithinParens(self):
 		self.eat('(')
