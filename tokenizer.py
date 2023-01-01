@@ -60,7 +60,7 @@ class JackTokenizer:
 		self.currentKeyWordValue = None
 
 		# flag: true if we want our debug output to display in the console
-		self.debug = True
+		self.debug = False
 
 		self.symbols = "{}[]().,;+-*/&|<>=~"
 		self.digits = "0123456789"  # for integer constants

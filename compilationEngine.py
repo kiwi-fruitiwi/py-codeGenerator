@@ -1,66 +1,58 @@
-# project 11 compilationEngine: convert to use symbolTables. output to XML
-#
-# 	compilationEngine needs fields: class+srt level symbolTables
-# 	reset when appropriate (never for class since each file is a class)
-# 	search through compilationEngine for 'identifier'
-# 		see where compileIdentifier is called
-# 			verify with Jack grammar sheet
-# 		classVarDec: (static|field) type varName (,varName)*;
-# 		varDec: var type varName (,varName)*;
-#
-# 		discern between className and srtName →
-# 		class: class className
-# 		srtCall: not varName.srtName(exprList)
-# 			srtName(exprList) | (className|varName).srtName(exprList)
-# 		srtDec: (constructor|function|method) (void|type) srtName(pList) sBody
-# 		type: int | char | boolean | className
-# 	use typeOf, kindOf, indexOf to determine:
-# 		what to add to symbolTable on each identifier
-# 	goal → output per identifier
-# 		identifier category: var arg static field, class srt
-# 		running index for var arg static field
-#
-#	☒ create compilationEngine constructor symbolTables
-#	☐ at end of compileSubroutine, we want subroutine name
-#		followed by printout of class- and srt-level tables
-#	☐ at end of class compilation: display class-level symbol table
-#
-#	☒ compileIdentifier split into three methods
-#		☒ compileClassName
-#			writes <class name> inside of <identifier> XML tag
-#		☒ compileSubroutineName
-#			writes <subroutine name> inside of <identifier> XML tag
-#		☒ compileVariable(varType, varKind)
-#			invokes self.symbolTables.define(name, type, kind)
-#			name is next token
-#	☐ call all three methods appropriate to replace every compileIdentifier call
-#	☐ compileType needs additional argument: variable kind → SFVA
-#		used in: (static field variable/local argument)
-#			classVarDec ← static, field
-#				VarKind.STATIC/FIELD
-#			varDec ← local/var
-#				VarKind.VAR
-#			subRoutineDec ← argument via parameterList, but not before srtName
-#				VarKind.ARGUMENT
-#		example: var Point p1; ← compiler just updates the symbolTable with:
-#			this would be a varDec case: var type varName (, varName)*;
-#				symbolTable.define(name, type, kind) call a result of cpVarDeck
-#					name: varName
-#					type: type
-#					kind: VarKind.VAR
-#			symbolTable.define(p1, Point, VarKind.VAR)
-#		example: static Point p1 ← cpClassVarDec uses VarKind.STATIC
-#		example: field Point p1 ← cpClassVarDec uses VarKind.FIELD
-#
-#
-#	☐ symbol table output requirements
-#		identifier's name ← already done in p10
-#		identifier's category ← var, arg, static, field, class, subroutine
-#		if category in [var, arg, static, field], running index
-#		identifier defined or used ❔
-#
+# part 1: symbol table extension to project 10 → see lectureNotes.txt
 # part 2: generating actual code instead of XML
-
+#
+# ⊼².📹→📇 5.11 testing strategy
+#	 project 10's syntax analyzer cannot discern between identifiers
+#	 now that we've developed a plan for a symbol table, we can change this
+#	 test understanding with symbol table handling by examining XML
+#
+#	 extend handling of identifiers
+#	 	output identifier category: var, argument, static, field, class, srt
+#	 	if category is var, arg, static, field, output also running index
+#	 	output whether identifier is being defined or used
+#
+#	 implementation
+#	 	implement symbolTable API
+#	 	extend syntax analyzer with identifier handling. eyeball XML
+#	 	run on test programs in project 10
+#
+#	 staged development plan with unit testing
+#	 	test programs for evolving compiler
+#	 		seven
+#	 			arithmetic expression involving constants only
+#	 			do + return statements
+#	 		convertToBin
+#	 			arbitrarily choose output location
+#	 			converts RAM[8000] to binary → 16 bits in RAM[8001-8016]
+#	 			tests:
+#	 				expressions without arrays or method calls
+#	 				procedural constructs: if while do let return
+#	 			tips for testing the compiled code
+#	 				cannot access RAM in 'no animation' mode
+#	 				use binoculars to look at address 8000
+#	 				click 'stop' button to see the results in state of the RAM
+#	 		square: constructors, methods, expression including method calls
+#	 			multiple files! Square, SquareGame, Main
+#	 		average: arrays and strings
+#	 		pong: complete object-oriented app with objects, static vars
+#	 			compile Bat, PongGame, Main, Ball
+#	 			delay execution. reduce speed slider to play game
+#	 		complexArrays: handles array manipulation with fancy indices
+#	 			a[b[a[3]]] = a[a[5]] * b[7-a[3]-Main.double(2)+1];
+#	 			test easily via screen's Output
+#	 	use compiler to compile the program directory
+#	 	inspect generated code
+#	 	if no errors, load directory into VM emulator
+#	 	run compiled program → inspect results
+#	 	if problem, fix compiler and repeat
+#
+#	 compilers don't generate exactly the same VM code. that's okay!
+#	 pop temp 0 after do Output.printInt gets rid of extra value
+#	 push constant 0 follows contract with another dummy value
+#
+#	 recap
+#	 	extend syntax analyzer into full-scale compiler
+#	 	test evolving compiler on supplied test programs AS YOU DEVELOP IT
 
 from tokenizer import JackTokenizer, TokenType
 from symbolTable import SymbolTable, VarKind, Entry
