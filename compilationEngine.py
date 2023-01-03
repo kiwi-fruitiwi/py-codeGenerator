@@ -2,26 +2,32 @@
 # part 2: generating actual code instead of XML
 #
 # ⊼².📹→📇 5.11 testing strategy
-#	 project 10's syntax analyzer cannot discern between identifiers
-#	 now that we've developed a plan for a symbol table, we can change this
-#	 test understanding with symbol table handling by examining XML
-#
-#	 extend handling of identifiers
-#	 	output identifier category: var, argument, static, field, class, srt
-#	 	if category is var, arg, static, field, output also running index
-#	 	output whether identifier is being defined or used
-#
-#	 implementation
-#	 	implement symbolTable API
-#	 	extend syntax analyzer with identifier handling. eyeball XML
-#	 	run on test programs in project 10
-#
 #	 staged development plan with unit testing
 #	 	test programs for evolving compiler
-#	 		seven
-#	 			arithmetic expression involving constants only
-#	 			do + return statements
-#	 		convertToBin
+#	 		⚙️seven: code → arithmetic expression involving constants only
+#				do + return statements
+#
+#				class Main {
+#				  function void main() {
+#				    do Output.printInt(1 + (2 * 3));
+#				 	return;
+#				  }
+#				}
+#
+#				function Main.main 0
+#				push constant 1
+#				push constant 2
+#				push constant 3
+#				call Math.multiply 2
+#				add
+#				call Output.printInt 1
+#				🌟 pop temp 0
+#				🌟 push constant 0
+#				return
+#
+#				🔬 [function, call] arguments → [nLocals, nArgs]
+#
+#	 		⚙️convertToBin: 🔬 if/else flowchart
 #	 			arbitrarily choose output location
 #	 			converts RAM[8000] to binary → 16 bits in RAM[8001-8016]
 #	 			tests:
@@ -31,13 +37,13 @@
 #	 				cannot access RAM in 'no animation' mode
 #	 				use binoculars to look at address 8000
 #	 				click 'stop' button to see the results in state of the RAM
-#	 		square: constructors, methods, expression including method calls
+#	 		⚙️square: constructors, methods, expression including method calls
 #	 			multiple files! Square, SquareGame, Main
-#	 		average: arrays and strings
-#	 		pong: complete object-oriented app with objects, static vars
+#	 		⚙️average: arrays and strings
+#	 		⚙️pong: complete object-oriented app with objects, static vars
 #	 			compile Bat, PongGame, Main, Ball
 #	 			delay execution. reduce speed slider to play game
-#	 		complexArrays: handles array manipulation with fancy indices
+#	 		⚙️complexArrays: handles array manipulation with fancy indices
 #	 			a[b[a[3]]] = a[a[5]] * b[7-a[3]-Main.double(2)+1];
 #	 			test easily via screen's Output
 #	 	use compiler to compile the program directory
