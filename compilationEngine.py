@@ -14,18 +14,25 @@
 #				  }
 #				}
 #
-#				function Main.main 0
+#				→ analyze syntax analyzer output
+#				→ infix → postfix? storing ops in list, which we execute later
+#				→ 1+(2*3): the (2*3) is its own expression: term contains (expr)
+#
+#				function Main.main 0 ← wait until varDec* in subroutineBody
 #				push constant 1
 #				push constant 2
 #				push constant 3
-#				call Math.multiply 2
-#				add
-#				call Output.printInt 1
-#				🌟 pop temp 0
+#				call Math.multiply 2 ← operator
+#				add ← operator
+#				call Output.printInt 1 ← keeping track of parameterList elements
+#				🌟 pop temp 0 ← trash pop
 #				🌟 push constant 0
 #				return
 #
 #				🔬 [function, call] arguments → [nLocals, nArgs]
+#				🔬 parse trees
+#				🏭 use provided Jack compiler to diff with our VM output before
+#					going to VM emulator. command prompt
 #
 #	 		⚙️convertToBin: 🔬 if/else flowchart
 #	 			arbitrarily choose output location
@@ -38,7 +45,8 @@
 #	 				use binoculars to look at address 8000
 #	 				click 'stop' button to see the results in state of the RAM
 #	 		⚙️square: constructors, methods, expression including method calls
-#	 			multiple files! Square, SquareGame, Main
+#	 			rework compilationEngine to hand multiple files
+#	 				Square, SquareGame, Main
 #	 		⚙️average: arrays and strings
 #	 		⚙️pong: complete object-oriented app with objects, static vars
 #	 			compile Bat, PongGame, Main, Ball
