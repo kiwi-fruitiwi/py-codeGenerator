@@ -60,7 +60,7 @@ class JackTokenizer:
 		self.currentKeyWordValue = None
 
 		# flag: true if we want our debug output to display in the console
-		self.debug = False
+		self.displayTokens = False
 
 		self.symbols = "{}[]().,;+-*/&|<>=~"
 		self.digits = "0123456789"  # for integer constants
@@ -294,5 +294,5 @@ class JackTokenizer:
 
 	# print some string to console only if the debug flag is True
 	def debugOutput(self, s: str):
-		if self.debug:
+		if self.displayTokens:
 			print(s)

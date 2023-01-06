@@ -7,6 +7,16 @@
 #	 		⚙️seven: code → arithmetic expression involving constants only
 #				do + return statements
 #
+#				🌊 bite list
+#					compileClass saves class name → field
+#					do → function className.functionName varDec* wait in srtBody
+#					how do we determine printInt has 1 argument? parameterList
+#					read expression tokens
+#						save ops, apply in order
+#
+#					how do we know printInt needs a trash pop?
+#					if 'return;' → push constant 0 to follow the contract
+#
 #				class Main {
 #				  function void main() {
 #				    do Output.printInt(1 + (2 * 3));
