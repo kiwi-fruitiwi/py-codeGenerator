@@ -92,9 +92,10 @@ def generateCompilationEngineOutput():
     # root: str = 'C:/Dropbox/code/nand2tetris/kiwi/nand2tetris/projects/'
     # filename: str = root + '10/ArrayTest/Main.jack'
     filename: str = 'test.jack'
-    outputUri = 'output.xml'  # compilation engine output
+    xmlOutput = 'output.xml'  # syntax analyzer output: tokens
+    VMOutput = 'output.vm'  # VMWriter output: VM code
 
-    ce = CompilationEngine(filename, outputUri)
+    ce = CompilationEngine(filename, xmlOutput, VMOutput)
     ce.testCompile()
 
 

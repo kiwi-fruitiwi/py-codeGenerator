@@ -80,6 +80,7 @@
 
 from tokenizer import JackTokenizer, TokenType
 from symbolTable import SymbolTable, VarKind, Entry
+from vmWriter import VMWriter
 
 
 def convertSymbolToHtml(value):
@@ -102,9 +103,12 @@ class CompilationEngine:
 
 	# creates a new compilation engine with the given input and output
 	# the next routine called must be compileClass
-	def __init__(self, inputJackUri, outputXmlUri):
+	def __init__(self, inputJackUri, outputXmlUri, outputVMUri):
 		# create a Tokenizer object from the inputURI
 		self.tk = JackTokenizer(inputJackUri)
+
+		# create a VMWriter object to write to file
+		self.vmWriter = VMWriter(outputVMUri)
 
 		# open file for writing with URI=outputXML
 		self.out = open(outputXmlUri, 'w')
