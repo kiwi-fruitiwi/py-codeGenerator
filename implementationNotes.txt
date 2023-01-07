@@ -1,3 +1,86 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+05:33 pm Saturday, January 14, 2023
+[1733]→ ⚙️seven: code → arithmetic expression involving constants only
+	do + return statements
+
+	🌊 bite list
+		compileClass saves class name → field
+		do → function className.functionName varDec* wait in srtBody
+		how do we determine printInt has 1 argument? parameterList
+		read expression tokens
+			save ops, apply in order
+
+		how do we know printInt needs a trash pop?
+		if 'return;' → push constant 0 to follow the contract
+
+    seven.jack
+        class Main {
+          function void main() {
+            do Output.printInt(1 + (2 * 3));
+            return;
+          }
+        }
+
+	target VM code
+		function Main.main 0 ← wait until varDec* in subroutineBody
+        push constant 1
+        push constant 2
+        push constant 3
+        call Math.multiply 2 ← operator
+        add ← operator
+        call Output.printInt 1 ← keeping track of parameterList elements
+        🌟 pop temp 0 ← trash pop
+        🌟 push constant 0
+        return
+
+	☐ subroutine: (constructor | function | method)
+		how are these handled differently in compilation?
+			treat these all as functions for now
+
+	what is the current compilationEngine workflow for compiling a subroutine?
+	    class: class className { classVarDec* subroutineDec* }
+	        subroutineDec handled by compileSubroutineDec
+		        self.symbolTables.startSubroutine()
+                checks for starting token: constructor, function, method
+                   → __subroutineDecHelper
+                    handles starting token
+                    ❔ how does the compiler handle return types? void | type
+                    compileParameterList
+                    compileSubroutineBody → { varDec* statements }
+                        🌟 after varDec* we will know nLocals for VM function
+
+	→ analyze syntax analyzer output
+	→ infix → postfix? storing ops in list, which we execute later
+	→ 1+(2*3): the (2*3) is its own expression: term contains (expr)
+
+	🔬 [function, call] arguments → [nLocals, nArgs]
+	🔬 parse trees
+	🏭 use provided Jack compiler to diff with our VM output before
+		going to VM emulator. command prompt
+
+
+
+
+
+
 #   ☒ compileIdentifier split into three methods
 #		☒ compileClassName
 #			writes <class name> inside of <identifier> XML tag

@@ -6,44 +6,6 @@
 #	 	test programs for evolving compiler
 #	 		⚙️seven: code → arithmetic expression involving constants only
 #				do + return statements
-#
-#				🌊 bite list
-#					compileClass saves class name → field
-#					do → function className.functionName varDec* wait in srtBody
-#					how do we determine printInt has 1 argument? parameterList
-#					read expression tokens
-#						save ops, apply in order
-#
-#					how do we know printInt needs a trash pop?
-#					if 'return;' → push constant 0 to follow the contract
-#
-#				class Main {
-#				  function void main() {
-#				    do Output.printInt(1 + (2 * 3));
-#				 	return;
-#				  }
-#				}
-#
-#				→ analyze syntax analyzer output
-#				→ infix → postfix? storing ops in list, which we execute later
-#				→ 1+(2*3): the (2*3) is its own expression: term contains (expr)
-#
-#				function Main.main 0 ← wait until varDec* in subroutineBody
-#				push constant 1
-#				push constant 2
-#				push constant 3
-#				call Math.multiply 2 ← operator
-#				add ← operator
-#				call Output.printInt 1 ← keeping track of parameterList elements
-#				🌟 pop temp 0 ← trash pop
-#				🌟 push constant 0
-#				return
-#
-#				🔬 [function, call] arguments → [nLocals, nArgs]
-#				🔬 parse trees
-#				🏭 use provided Jack compiler to diff with our VM output before
-#					going to VM emulator. command prompt
-#
 #	 		⚙️convertToBin: 🔬 if/else flowchart
 #	 			arbitrarily choose output location
 #	 			converts RAM[8000] to binary → 16 bits in RAM[8001-8016]
@@ -134,7 +96,12 @@ class CompilationEngine:
 
 		# keeps track of the class's name because it's a variable type for our
 		# symbol tables. notably, it's used for 'this' in subRoutineDec
-		self.className = 'not yet set'
+		self.className = 'undef'
+		self.subroutineName = 'undef'
+
+		# accumulator to track number of variables in srt
+		# compileVarDec increments this while compileSubroutineDec resets to 0
+		self.nLocals = 0
 
 	def indent(self):
 		self.indentLevel += 1
@@ -283,6 +250,8 @@ class CompilationEngine:
 		"""
 		# clear our subroutine symbol table
 		self.symbolTables.startSubroutine()
+		self.subroutineName = 'unset'
+		self.nLocals = 0
 
 		# skipNextAdvOnEat because we might fail to find a subroutineDec
 		self.peek()
