@@ -324,7 +324,7 @@ class CompilationEngine:
 			self.__compileType()
 
 		# subroutineName
-		subroutineName = self.compileSubroutineName()
+		self.subroutineName = self.compileSubroutineName()
 
 		# '(' parameterList ')'
 		self.eat('(')
@@ -333,7 +333,7 @@ class CompilationEngine:
 
 		# subroutineBody → { varDec* statements }
 		self.compileSubroutineBody()
-		print(f'\n{self.symbolTables.getSrtLevelSymTable(subroutineName)}')
+		print(f'\n{self.symbolTables.getSrtLevelSymTable(self.subroutineName)}')
 
 		self.outdent()
 		self.write('</subroutineDec>\n')
