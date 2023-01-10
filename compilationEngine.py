@@ -436,6 +436,8 @@ class CompilationEngine:
 			self.compileVarDec()
 			self.peek()
 
+		self.vmWriter.writeFunction(self.className, self.subroutineName, self.nLocals)
+
 		# statements always starts with keyword in [let, if, while, do, return]
 		self.compileStatements()
 		self.eat('}')
@@ -598,12 +600,14 @@ class CompilationEngine:
 	def __compileVarNameList(self, vType: str, vKind: VarKind):
 		# varName
 		self.compileUndefinedVariable(vType, vKind)
+		self.nLocals += 1  # update nLocals count for current subroutine
 		self.peek()  # check ahead to see: ',' or ';' ?
 
 		# (',' varName)*
 		while self.tk.symbol() == ',':
 			self.eat(',')
 			self.compileUndefinedVariable(vType, vKind)
+			self.nLocals += 1
 			self.peek()
 
 		# the only token we have left is ';'
