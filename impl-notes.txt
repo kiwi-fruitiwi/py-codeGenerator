@@ -14,7 +14,13 @@
 
 
 
-
+08:55 am Sunday, January 15, 2023
+[0855]→ ⚙️seven next steps:
+    ☐ collecting terms of an expression in a list
+    ☐ collecting operators in an expression in a list
+    ☐ recognize * as call Math.multiply 2
+    ☐ adding pop temp 0 after functions that don't return anything? how do we detect this?
+    ☐ push constant 0 if we encounter return; with no return value
 
 
 05:33 pm Saturday, January 14, 2023
