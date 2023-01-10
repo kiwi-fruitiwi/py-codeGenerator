@@ -42,7 +42,7 @@
 
 from tokenizer import JackTokenizer, TokenType
 from symbolTable import SymbolTable, VarKind, Entry
-from vmWriter import VMWriter
+from vmWriter import VMWriter, SegType, ArithType
 
 
 def convertSymbolToHtml(value):
@@ -1077,6 +1077,9 @@ class CompilationEngine:
 			case TokenType.INT_CONST:
 				self.advance()
 				value = self.tk.intVal()
+
+				# VMWriter needs to execute: push constant n
+				self.vmWriter.writePush(SegType.CONST, value)
 				self.write(f'<integerConstant> {value} </integerConstant>\n')
 
 			case TokenType.STRING_CONST:
@@ -1130,7 +1133,7 @@ class CompilationEngine:
 		# while next symbol is an op: compile the term that follows and check
 		# for another op!
 		while self.tk.getTokenType() == TokenType.SYMBOL and \
-				self.tk.symbol() in self.opsList:
+			self.tk.symbol() in self.opsList:
 			# eat it
 			self.advance()
 			self.write(
