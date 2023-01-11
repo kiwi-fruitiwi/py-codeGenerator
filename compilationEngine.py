@@ -952,6 +952,8 @@ class CompilationEngine:
 					# 	case '(': write <srtName> as tag
 					#	case '.': must be className → '.' → srtName
 					classOrSrtName = True
+
+					# we will take care of token output in LL2 cases below!
 				else:
 					# it's an identifier in our symbolTables! these cases apply:
 					# 	varName
@@ -1072,6 +1074,9 @@ class CompilationEngine:
 				self.advance()
 				value = self.tk.keyWord()
 				assert value in ['true', 'false', 'null', 'this'], value
+
+				# VMWriter handles each of 4 cases separately
+				# TODO
 				self.write(f'<keyword> {value} </keyword>\n')
 
 			case TokenType.INT_CONST:
@@ -1085,6 +1090,9 @@ class CompilationEngine:
 			case TokenType.STRING_CONST:
 				self.advance()
 				value = self.tk.stringVal()
+
+				# VMWriter uses OS method to handle string constants
+				# TODO
 				self.write(f'<stringConstant> {value} </stringConstant>\n')
 
 			case _:
@@ -1118,6 +1126,7 @@ class CompilationEngine:
 		→ i * (-j)
 		pattern: term (op term)*
 		"""
+
 		self.write('<expression>\n')
 		self.indent()
 		self.indentLevel += 1
