@@ -837,6 +837,10 @@ class CompilationEngine:
 		self.outdent()
 		self.write('</doStatement>\n')
 
+		# when a doStatement occurs, nothing is done with the function's retVal
+		# so we can get rid of it with pop temp 0
+		self.vmWriter.writePop(SegType.TEMP, 0)
+
 	def __compileSubroutineCallHelper(self):
 		# subroutineName '(' expressionList ')' |
 		# (className | varName) '.' subroutineName '(' expressionList ')'
@@ -849,12 +853,10 @@ class CompilationEngine:
 
 		self.peek()
 
-		# handling the ',render' subroutineName after '.'
+		# handling the 'render' subroutineName after '.'
 		if self.tk.symbol() == '.':
 			self.eat('.')
-			# advance and grab the subroutineName
-			self.advance()
-			self.write(f'<identifier> {self.tk.identifier()} </identifier>\n')
+			self.compileSubroutineName()
 
 		# then eat('(') → compileExpressionList
 		self.eat('(')
@@ -1172,6 +1174,8 @@ class CompilationEngine:
 			match op:
 				case '+':
 					self.vmWriter.writeArithmetic(ArithType.ADD)
+				case '-':
+					self.vmWriter.writeArithmetic(ArithType.SUB)
 				case '*':
 					self.vmWriter.writeCall('Math', 'multiply', 2)
 
