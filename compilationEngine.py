@@ -1127,6 +1127,10 @@ class CompilationEngine:
 		pattern: term (op term)*
 		"""
 
+		# keep track of any ops we see from self.opsList
+		# reverse list at the end of expression to apply them one by one
+		encounteredOps: list = []
+
 		self.write('<expression>\n')
 		self.indent()
 		self.indentLevel += 1
@@ -1143,6 +1147,8 @@ class CompilationEngine:
 		# for another op!
 		while self.tk.getTokenType() == TokenType.SYMBOL and \
 			self.tk.symbol() in self.opsList:
+			encounteredOps.append(self.tk.symbol())
+
 			# eat it
 			self.advance()
 			self.write(
@@ -1158,6 +1164,16 @@ class CompilationEngine:
 		self.indentLevel -= 1
 		self.outdent()
 		self.write('</expression>\n')
+
+		# process the ops backwards
+		encounteredOps = encounteredOps[::-1]
+
+		for op in encounteredOps:
+			match op:
+				case '+':
+					self.vmWriter.writeArithmetic(ArithType.ADD)
+				case '*':
+					self.vmWriter.writeCall('Math', 'multiply', 2)
 
 	# compiles a (possibly empty) comma-separated list of expressions
 	# (expression (',' expression)*)?

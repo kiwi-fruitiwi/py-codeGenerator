@@ -75,11 +75,11 @@ class VMWriter:
 		self.out.write(f'if-goto {label}\n')
 
 
-	def writeCall(self, functionName: str, nArgs: int):
+	def writeCall(self, className: str, functionName: str, nArgs: int):
 		"""
 		writes a VM call command
 		"""
-		self.out.write(f'call {functionName} {nArgs}\n')
+		self.out.write(f'call {className}.{functionName} {nArgs}\n')
 
 
 	def writeFunction(self, className: str, functionName: str, nLocals: int):
