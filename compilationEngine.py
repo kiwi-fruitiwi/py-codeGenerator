@@ -614,7 +614,8 @@ class CompilationEngine:
 		self.eat(';')
 
 	# eats token = identifier, checks type
-	def compileIdentifier(self):  # TODO remove this in favor of subtypes
+	# currently not called
+	def compileIdentifier__deprecated(self):
 		# we actually don't eat because we're not sure what identifier it is
 		# instead, we advance and assert tokenType
 		self.advance()
@@ -849,6 +850,9 @@ class CompilationEngine:
 		# 	identifier (className | varName) → '.' e.g. obj.render(x, y)
 		# 	identifier (subroutineName) → '(' e.g. render(x, y)
 		self.advance()
+
+		# TODO requires a look-up in our symbol table to see if it's
+		#	className, varName, or srtName
 		self.write(f'<identifier> {self.tk.identifier()} </identifier>\n')
 
 		self.peek()
@@ -1275,8 +1279,10 @@ class CompilationEngine:
 				self.write(f'<symbol> {value} </symbol>\n')
 
 			case TokenType.IDENTIFIER:
-				value = self.tk.identifier()
-				self.write(f'<identifier> {value} </identifier>\n')
+				raise ValueError(f'IDENTIFIER tokens no longer handled in eat')
+
+				# value = self.tk.identifier()
+				# self.write(f'<identifier> {value} </identifier>\n')
 
 			case TokenType.INT_CONST:
 				value = self.tk.intVal()
@@ -1287,7 +1293,7 @@ class CompilationEngine:
 				self.write(f'<stringConstant> {value} </stringConstant>\n')
 
 			case _:  # impossible
-				raise TypeError(f'token type invalid: not keyword, symbol, \
+				raise ValueError(f'token type invalid: not keyword, symbol, \
 					identifier, int constant, or string constant: {tokenType}')
 
 		# assert expectedToken matches actual token
