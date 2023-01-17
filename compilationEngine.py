@@ -661,10 +661,9 @@ class CompilationEngine:
 		assert st.hasVar(varName)
 
 		k: VarKind = st.kindOf(varName)
-		t: str = st.typeOf(varName)
-		tag: str = k.value
+		kindPrefix: str = k.value
 
-		self.write(f'<{tag}Variable> {varName} </{tag}Variable>\n')
+		self.write(f'<{kindPrefix}Variable> {varName} </{kindPrefix}Variable>\n')
 
 	# sub-method of compileIdentifier: covers static field arg var
 	def compileUndefinedVariable(self, vType: str, vKind: VarKind):
@@ -843,6 +842,7 @@ class CompilationEngine:
 		self.vmWriter.writePop(SegType.TEMP, 0)
 
 	def __compileSubroutineCallHelper(self):
+		st = self.symbolTables
 		# subroutineName '(' expressionList ')' |
 		# (className | varName) '.' subroutineName '(' expressionList ')'
 		#
@@ -850,17 +850,33 @@ class CompilationEngine:
 		# 	identifier (className | varName) → '.' e.g. obj.render(x, y)
 		# 	identifier (subroutineName) → '(' e.g. render(x, y)
 		self.advance()
+		identifierName = self.tk.identifier()
 
-		# TODO requires a look-up in our symbol table to see if it's
-		#	className, varName, or srtName
-		self.write(f'<identifier> {self.tk.identifier()} </identifier>\n')
-
+		# we have either of two symbols, '.' or '(':
+		# 1. subroutineName(expressionList), or
+		# 2. (className|varName).subroutineName(expressionList)
+		# upon reading the first identifier token, we can peek at the next token
+		# if it's a ., we must be in case 2 and identify (className|varName)
+		# if it's (, we are in case 1 and it's easy.
 		self.peek()
 
-		# handling the 'render' subroutineName after '.'
 		if self.tk.symbol() == '.':
+			# we are in case 2! (className|varName).srtName(expressionList)
+			# check the symbolTable for varName. if not found, it's a className
+			if st.hasVar(identifierName):
+				k: VarKind = st.kindOf(identifierName)  # static field lcl arg
+				kindPrefix: str = k.value
+
+				self.write(
+					f'<{kindPrefix}Variable> {identifierName} '
+					f'</{kindPrefix}Variable>\n')
+			else:
+				self.write(f'<className> {self.tk.identifier()} </className>\n')
+
 			self.eat('.')
-			self.compileSubroutineName()
+
+		# now process the common tail grammar: subroutineName(expressionList)
+		self.compileSubroutineName()
 
 		# then eat('(') → compileExpressionList
 		self.eat('(')
