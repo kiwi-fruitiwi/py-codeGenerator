@@ -915,6 +915,9 @@ class CompilationEngine:
 				self.eat(';')
 				self.outdent()
 				self.write('</returnStatement>\n')
+
+				self.vmWriter.writePush(SegType.CONST, 0)
+				self.vmWriter.writeReturn()
 				return
 		else:
 			# there's an expression in → expression? ';'
@@ -922,6 +925,11 @@ class CompilationEngine:
 			self.eat(';')
 			self.outdent()
 			self.write('</returnStatement>\n')
+
+			# TODO maybe compileExpression needs to return the value of the exp?
+			# the result of this expression should be on top of the stack
+			# 	not sure if anything is needed here
+			# self.vmWriter.writeReturn()
 
 	# compiles a term. if the current token is an identifier, the routine must
 	# distinguish between a variable, an array entry, or a subroutine call. a
