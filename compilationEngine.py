@@ -876,12 +876,17 @@ class CompilationEngine:
 			self.eat('.')
 
 		# now process the common tail grammar: subroutineName(expressionList)
-		self.compileSubroutineName()
+		srtName: str = self.compileSubroutineName()
 
 		# then eat('(') → compileExpressionList
 		self.eat('(')
-		self.compileExpressionList()
+		expressionCount: int = self.compileExpressionList()
 		self.eat(')')
+
+		# TODO this needs work depending on what idName is: class or var
+		#   for class, output `call className srtName nArgs`
+		#   for var, we want `call typeof(varName) srtName nArgs+1`
+		self.vmWriter.writeCall(identifierName, srtName, expressionCount)
 
 	# 'return' expression? ';'
 	def compileReturn(self):
@@ -1229,7 +1234,8 @@ class CompilationEngine:
 			  </term>
 			</expression>
 			</expressionList>
-		:return:
+
+		:return: the number of expressions encountered!
 		"""
 		# (expression (',' expression)*)?
 		self.write('<expressionList>\n')
@@ -1239,12 +1245,15 @@ class CompilationEngine:
 		# hitting the last ')' ensures the expressionList is done
 		self.peek()
 
+		# keep track of how many expressions we've compiled
+		expressionCount: int = 0
 		if self.tk.getTokenType() == TokenType.SYMBOL and self.tk.symbol() == ')':
 			self.outdent()
 			self.write('</expressionList>\n')
-			return
+			return expressionCount
 		else:
 			self.compileExpression()
+			expressionCount = 1
 
 		self.peek()
 
@@ -1253,6 +1262,7 @@ class CompilationEngine:
 		while self.tk.symbol() == ',':
 			self.eat(',')
 			self.compileExpression()
+			expressionCount += 1
 			self.peek()
 
 		# ending case: ')' means we're done
@@ -1261,6 +1271,7 @@ class CompilationEngine:
 		if self.tk.symbol() == ')':
 			self.outdent()
 			self.write('</expressionList>\n')
+			return expressionCount
 		else:
 			raise ValueError(
 				f'expressionList did not end with closeParen token')
