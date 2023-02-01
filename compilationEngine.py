@@ -871,7 +871,7 @@ class CompilationEngine:
 					f'<{kindPrefix}Variable> {identifierName} '
 					f'</{kindPrefix}Variable>\n')
 			else:
-				self.write(f'<className> {self.tk.identifier()} </className>\n')
+				self.write(f'<className> {identifierName} </className>\n')
 
 			self.eat('.')
 

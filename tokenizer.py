@@ -281,7 +281,7 @@ class JackTokenizer:
 		return self.currentSymbolValue
 
 	def identifier(self):
-		assert self.currentTokenType == TokenType.IDENTIFIER
+		assert self.currentTokenType == TokenType.IDENTIFIER, f'{self.currentTokenType}: {self.symbol()}'
 		return self.currentIdentifierValue
 
 	def intVal(self):
