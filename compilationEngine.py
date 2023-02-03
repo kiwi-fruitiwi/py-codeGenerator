@@ -646,7 +646,7 @@ class CompilationEngine:
 
 	# compile a variable already known to be defined in our symbolTables
 	# used for compileLet, term?
-	def compileDefinedVariable(self):
+	def compileDefinedVariable(self) -> str:
 		self.advance()
 		assert self.tk.getTokenType() == TokenType.IDENTIFIER, f'{self.tk.getTokenType()}'
 		varName = self.tk.identifier()
@@ -664,6 +664,7 @@ class CompilationEngine:
 		kindPrefix: str = k.value
 
 		self.write(f'<{kindPrefix}Variable> {varName} </{kindPrefix}Variable>\n')
+		return varName
 
 	# sub-method of compileIdentifier: covers static field arg var
 	def compileUndefinedVariable(self, vType: str, vKind: VarKind):
@@ -699,7 +700,7 @@ class CompilationEngine:
 
 		# className, varName, subRName all identifiers ← 'program structure'
 		# this variable has to be defined in order for let to be used
-		self.compileDefinedVariable()
+		varName: str = self.compileDefinedVariable()
 
 		# check next token for two options: '[' or '='
 		self.peek()
@@ -730,9 +731,14 @@ class CompilationEngine:
 		self.outdent()
 		self.write('</letStatement>\n')
 
-		# TODO make sure the result of the expression is popped into the memseg
+		# TODO make sure the result of the expression is popped into the memSeg
 		#  of the defined variable
+		st = self.symbolTables
+		assert st.hasVar(varName)
 
+		stIndex: int = st.indexOf(varName)
+		stKind: VarKind = st.kindOf(varName)
+		self.vmWriter.writePop(stKind, stIndex)
 
 	# compiles an if statement, possibly with a trailing else clause
 	# if '(' expression ')' '{' statements '}' (else '{' statements '}')?
