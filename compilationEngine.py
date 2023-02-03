@@ -698,6 +698,7 @@ class CompilationEngine:
 		self.eat('let')
 
 		# className, varName, subRName all identifiers ← 'program structure'
+		# this variable has to be defined in order for let to be used
 		self.compileDefinedVariable()
 
 		# check next token for two options: '[' or '='
@@ -728,6 +729,10 @@ class CompilationEngine:
 
 		self.outdent()
 		self.write('</letStatement>\n')
+
+		# TODO make sure the result of the expression is popped into the memseg
+		#  of the defined variable
+
 
 	# compiles an if statement, possibly with a trailing else clause
 	# if '(' expression ')' '{' statements '}' (else '{' statements '}')?
@@ -830,7 +835,17 @@ class CompilationEngine:
 		self.indent()
 		self.eat('do')
 
-		self.__compileSubroutineCallHelper()
+		# subroutineName '(' expressionList ')' |
+		# (className | varName) '.' subroutineName '(' expressionList ')'
+		#
+		# two possibilities:
+		# 	identifier (className | varName) → '.' e.g. obj.render(x, y)
+		# 	identifier (subroutineName) → '(' e.g. render(x, y)
+		self.advance()
+		identifierName = self.tk.identifier()
+
+		self.peek()
+		self.__compileSubroutineCallHelper(identifierName)
 
 		# ';'
 		self.eat(';')
@@ -841,24 +856,14 @@ class CompilationEngine:
 		# so we can get rid of it with pop temp 0
 		self.vmWriter.writePop(SegType.TEMP, 0)
 
-	def __compileSubroutineCallHelper(self):
+	# we have either of two symbols, '.' or '(':
+	# 1. subroutineName(expressionList), or
+	# 2. (className|varName).subroutineName(expressionList)
+	# upon reading the first identifier token, we can peek at the next token
+	# if it's a ., we must be in case 2 and identify (className|varName)
+	# if it's (, we are in case 1 and it's easy.
+	def __compileSubroutineCallHelper(self, identifierName):
 		st = self.symbolTables
-		# subroutineName '(' expressionList ')' |
-		# (className | varName) '.' subroutineName '(' expressionList ')'
-		#
-		# two possibilities:
-		# 	identifier (className | varName) → '.' e.g. obj.render(x, y)
-		# 	identifier (subroutineName) → '(' e.g. render(x, y)
-		self.advance()
-		identifierName = self.tk.identifier()
-
-		# we have either of two symbols, '.' or '(':
-		# 1. subroutineName(expressionList), or
-		# 2. (className|varName).subroutineName(expressionList)
-		# upon reading the first identifier token, we can peek at the next token
-		# if it's a ., we must be in case 2 and identify (className|varName)
-		# if it's (, we are in case 1 and it's easy.
-		self.peek()
 
 		if self.tk.symbol() == '.':
 			# we are in case 2! (className|varName).srtName(expressionList)
@@ -1014,47 +1019,8 @@ class CompilationEngine:
 						case ';' | ')':
 							# we're at the end of the line! we can stop here
 							pass
-						case '.':
-							# remember that flag we set earlier?
-							# in case '.' it can only be a class
-
-							# matches pattern in subroutineCall:
-							# 	(className | varName).srtName(exprList)
-							#
-							# example:
-							# 	let key = Keyboard.keyPressed();
-							#
-							# <expression>
-							#   <term>
-							#     <identifier> Keyboard </identifier>
-							#     <symbol> . </symbol>
-							#     <identifier> keyPressed </identifier>
-							#     <symbol> ( </symbol>
-							#     <expressionList>
-							#     </expressionList>
-							#     <symbol> ) </symbol>
-							#   </term>
-							# </expression>
-							if classOrSrtName:
-								self.write(
-									f'<className> {identifier} </className>\n')
-							else:
-								# not className means it must be varName
-								# we already output this varName in LL1 clause
-								pass
-							self.eat('.')
-
-							self.compileSubroutineName()
-							self.eat('(')
-							self.compileExpressionList()
-							self.eat(')')
-
-						case '(':  # must match subroutineName(expressionList)
-							assert classOrSrtName
-							self.compileSubroutineName()
-							self.eat('(')
-							self.compileExpressionList()
-							self.eat(')')
+						case '.' | '(':
+							self.__compileSubroutineCallHelper(identifier)
 
 						case '[':  # matches varName[expression]
 							assert not classOrSrtName
