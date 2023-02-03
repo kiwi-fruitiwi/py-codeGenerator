@@ -1,5 +1,7 @@
 # encapsulates all activities related to generating output from the compiler
 import enum
+from typing import overload
+from symbolTable import VarKind
 
 
 class SegType(enum.Enum):
@@ -32,13 +34,18 @@ class VMWriter:
 		"""
 		self.out = open(outputUri, 'w')
 
-
-	def writePush(self, segment: SegType, index: int):
+	def writeSegPush(self, segment: SegType, index: int):
 		"""
 		writes a VM push command, e.g. 'push local 0'
 		"""
 		self.out.write(f'push {segment.value} {index}\n')
 
+	def writeVarPush(self, segment: VarKind, index: int):
+		"""
+		writes a VM push command, e.g. 'push local 0'
+		but supports SymbolTable's VarKind enumeration instead of our SegType
+		"""
+		self.out.write(f'push {segment.value} {index}\n')
 
 	def writePop(self, segment: SegType, index: int):
 		"""

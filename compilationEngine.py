@@ -932,7 +932,7 @@ class CompilationEngine:
 				self.outdent()
 				self.write('</returnStatement>\n')
 
-				self.vmWriter.writePush(SegType.CONST, 0)
+				self.vmWriter.writeSegPush(SegType.CONST, 0)
 				self.vmWriter.writeReturn()
 				return
 		else:
@@ -1011,6 +1011,13 @@ class CompilationEngine:
 					self.write(
 						f'<{tag}Variable> {identifier} </{tag}Variable>\n')
 
+					# if we came in via compileExpressionList, we need to push
+					# every varName in the expressionList onto the stack to
+					# prepare for a function call
+					st: SymbolTable = self.symbolTables
+					assert st.hasVar(identifier)
+					self.vmWriter.writeVarPush(kind, st.indexOf(identifier))
+
 				# we need to advance one more time to check 4 LL2 cases
 				#   foo ← varName
 				#	foo'['expression']' ← varName'['expression']'
@@ -1075,6 +1082,7 @@ class CompilationEngine:
 					case '~':
 						self.eat('~')
 						self.compileTerm()
+						# self.vmWriter.writeArithmetic(ArithType.NOT)
 					case _:
 						raise ValueError(f'invalid symbol in term LL2: {value}')
 
@@ -1092,7 +1100,7 @@ class CompilationEngine:
 				value = self.tk.intVal()
 
 				# VMWriter needs to execute: push constant n
-				self.vmWriter.writePush(SegType.CONST, value)
+				self.vmWriter.writeSegPush(SegType.CONST, value)
 				self.write(f'<integerConstant> {value} </integerConstant>\n')
 
 			case TokenType.STRING_CONST:
