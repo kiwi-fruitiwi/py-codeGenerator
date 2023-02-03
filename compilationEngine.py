@@ -1099,6 +1099,7 @@ class CompilationEngine:
 					case '-':
 						self.eat('-')
 						self.compileTerm()
+						self.vmWriter.writeArithmetic(ArithType.NEG)
 					case '~':
 						self.eat('~')
 						self.compileTerm()
