@@ -103,6 +103,9 @@ class CompilationEngine:
 		# compileVarDec increments this while compileSubroutineDec resets to 0
 		self.nLocals = 0
 
+		# global counter for if statements in order to create unique labels
+		self.IF_STATEMENT_COUNTER = 0
+
 	def indent(self):
 		self.indentLevel += 1
 
@@ -772,8 +775,19 @@ class CompilationEngine:
 		self.eat('if')
 		self.__compileExprWithinParens()
 
+		# first we increment IF_STATEMENT_COUNTER
+		#
+		# VM writes:
+		# 	'eq'
+		# 	'not'
+		# 	'if-goto IF_FALSE_'+ IF_STATEMENT_COUNTER
+
 		# '{' statements '}'
 		self.__compileStatementsWithinBrackets()
+
+		# VM writes:
+		# 	goto IF_END_n
+		# 	label IF_FALSE_n
 
 		# (else '{' statements '}')?
 		self.peek()  # check for else token
@@ -785,6 +799,13 @@ class CompilationEngine:
 				self.__compileStatementsWithinBrackets()
 				self.outdent()
 				self.write('</elseStatement>\n')
+				# VM writes:
+				# 	label IF_END_n
+
+		# arriving here means there's no else clause
+		# VM writes:
+		# 	label IF_END_n
+
 
 		self.outdent()
 		self.write('</ifStatement>\n')
@@ -938,6 +959,7 @@ class CompilationEngine:
 		else:
 			# there's an expression in → expression? ';'
 			self.compileExpression()
+			self.vmWriter.writeReturn()
 			self.eat(';')
 			self.outdent()
 			self.write('</returnStatement>\n')
