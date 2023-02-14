@@ -775,12 +775,14 @@ class CompilationEngine:
 		self.eat('if')
 		self.__compileExprWithinParens()
 
-		# first we increment IF_STATEMENT_COUNTER
-		#
 		# VM writes:
 		# 	'eq'
 		# 	'not'
 		# 	'if-goto IF_FALSE_'+ IF_STATEMENT_COUNTER
+		N: int = self.IF_STATEMENT_COUNTER
+		self.vmWriter.writeArithmetic(ArithType.EQ)
+		self.vmWriter.writeArithmetic(ArithType.NOT)
+		self.vmWriter.writeIf(f'IF_FALSE_{N}')
 
 		# '{' statements '}'
 		self.__compileStatementsWithinBrackets()
@@ -788,24 +790,33 @@ class CompilationEngine:
 		# VM writes:
 		# 	goto IF_END_n
 		# 	label IF_FALSE_n
+		# let's wait until else clause detection to see if we need IF_END_N!
 
 		# (else '{' statements '}')?
 		self.peek()  # check for else token
 		if self.tk.getTokenType() == TokenType.KEYWORD:
 			if self.tk.keyWord() == 'else':
+				# okay, else clause detected. we need
+				self.vmWriter.writeGoto(f'IF_END_{N}')
+				self.vmWriter.writeLabel(f'IF_FALSE_{N}')
+
 				self.write('<elseStatement>\n')
 				self.indent()
 				self.eat('else')
 				self.__compileStatementsWithinBrackets()
 				self.outdent()
 				self.write('</elseStatement>\n')
+
 				# VM writes:
 				# 	label IF_END_n
+				self.vmWriter.writeLabel(f'IF_END_{N}')
 
-		# arriving here means there's no else clause
-		# VM writes:
-		# 	label IF_END_n
+		else:
+			# arriving here means there's no else clause. no IF_END_n needed
+			self.vmWriter.writeLabel(f'IF_FALSE_{N}')
 
+		# make sure we increment IF_STATEMENT_COUNTER to generate unique labels
+		self.IF_STATEMENT_COUNTER += 1
 
 		self.outdent()
 		self.write('</ifStatement>\n')
