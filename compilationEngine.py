@@ -776,11 +776,9 @@ class CompilationEngine:
 		self.__compileExprWithinParens()
 
 		# VM writes:
-		# 	'eq'
 		# 	'not'
 		# 	'if-goto IF_FALSE_'+ IF_STATEMENT_COUNTER
 		N: int = self.IF_STATEMENT_COUNTER
-		self.vmWriter.writeArithmetic(ArithType.EQ)
 		self.vmWriter.writeArithmetic(ArithType.NOT)
 		self.vmWriter.writeIf(f'IF_FALSE_{N}')
 
@@ -1217,6 +1215,7 @@ class CompilationEngine:
 		# process the ops backwards
 		encounteredOps = encounteredOps[::-1]
 
+		# the eight operators in the Jack Grammar are: + - * / & | < > =
 		for op in encounteredOps:
 			match op:
 				case '+':
@@ -1225,6 +1224,16 @@ class CompilationEngine:
 					self.vmWriter.writeArithmetic(ArithType.SUB)
 				case '*':
 					self.vmWriter.writeCall('Math', 'multiply', 2)
+				case '/':
+					self.vmWriter.writeCall('Math', 'divide', 2)
+				case '&':
+					self.vmWriter.writeArithmetic(ArithType.AND)
+				case '|':
+					self.vmWriter.writeArithmetic(ArithType.OR)
+				case '<':
+					self.vmWriter.writeArithmetic(ArithType.LT)
+				case '>':
+					self.vmWriter.writeArithmetic(ArithType.GT)
 
 	# compiles a (possibly empty) comma-separated list of expressions
 	# (expression (',' expression)*)?
