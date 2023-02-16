@@ -1113,7 +1113,7 @@ class CompilationEngine:
 					case '~':
 						self.eat('~')
 						self.compileTerm()
-						# self.vmWriter.writeArithmetic(ArithType.NOT)
+						self.vmWriter.writeArithmetic(ArithType.NOT)
 					case _:
 						raise ValueError(f'invalid symbol in term LL2: {value}')
 
