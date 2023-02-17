@@ -103,8 +103,9 @@ class CompilationEngine:
 		# compileVarDec increments this while compileSubroutineDec resets to 0
 		self.nLocals = 0
 
-		# global counter for if statements in order to create unique labels
+		# global counter for if and while statements for creating unique labels
 		self.IF_STATEMENT_COUNTER = 0
+		self.WHILE_STATEMENT_COUNTER = 0
 
 	def indent(self):
 		self.indentLevel += 1
@@ -831,6 +832,15 @@ class CompilationEngine:
 
 	# 'while' '(' expression ')' '{' statements '}'
 	def compileWhile(self):
+		# set up an alias for our global while statement counter
+		N: int = self.WHILE_STATEMENT_COUNTER
+
+		# pseudocode
+		# 🏭 label WHILE_START_n before compiling the condition
+		# 🏭 not after compiling condition
+		# 🏭 if-goto WHILE_END_n before compiling statements
+		# 🏭 goto WHILE_START_n after compiling statements
+		# 🏭 label WHILE_END_n following that
 
 		# 'while'
 		self.write('<whileStatement>\n')
@@ -842,6 +852,9 @@ class CompilationEngine:
 
 		# '{' statements '}'
 		self.__compileStatementsWithinBrackets()
+
+		# make sure we increment our global counter to generate unique labels
+		self.WHILE_STATEMENT_COUNTER += 1
 
 		self.outdent()
 		self.write('</whileStatement>\n')
