@@ -75,7 +75,7 @@ class VMWriter:
 		self.out.write(f'goto {label}\n')
 
 
-	def writeIf(self, label: str):
+	def writeIfGoto(self, label: str):
 		"""
 		writes a VM if-goto command, e.g. 'if-goto COMPUTE_ELEMENT'
 		"""

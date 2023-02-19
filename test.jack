@@ -3,6 +3,7 @@ class Main {
         while (n < 10) {
           let n = n + 1;
         }
-        return;
+
+        return salad;
     }
 }

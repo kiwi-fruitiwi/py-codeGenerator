@@ -327,6 +327,14 @@ class CompilationEngine:
 		else:  # it must be int, char, boolean, or className, aka 'type'$
 			self.__compileType()
 
+		# TODO → save state: either 'void' or type
+		#	keep track of boolean, 'hasReturnValue'?
+		#	send this flag as a parameter to compileReturn
+		#		consider setting global flag, 'currentSubroutineReturnValue'
+		#		two cases:
+		#			return; → assertionError if not void
+		#			return expr; → assertionError if void
+
 		# subroutineName
 		self.subroutineName = self.compileSubroutineName()
 
@@ -781,7 +789,7 @@ class CompilationEngine:
 		# 	'if-goto IF_FALSE_'+ IF_STATEMENT_COUNTER
 		N: int = self.IF_STATEMENT_COUNTER
 		self.vmWriter.writeArithmetic(ArithType.NOT)
-		self.vmWriter.writeIf(f'IF_FALSE_{N}')
+		self.vmWriter.writeIfGoto(f'IF_FALSE_{N}')
 
 		# '{' statements '}'
 		self.__compileStatementsWithinBrackets()
@@ -835,12 +843,8 @@ class CompilationEngine:
 		# set up an alias for our global while statement counter
 		N: int = self.WHILE_STATEMENT_COUNTER
 
-		# pseudocode
 		# 🏭 label WHILE_START_n before compiling the condition
-		# 🏭 not after compiling condition
-		# 🏭 if-goto WHILE_END_n before compiling statements
-		# 🏭 goto WHILE_START_n after compiling statements
-		# 🏭 label WHILE_END_n following that
+		self.vmWriter.writeLabel(f'WHILE_START_{N}')
 
 		# 'while'
 		self.write('<whileStatement>\n')
@@ -850,8 +854,19 @@ class CompilationEngine:
 		# '(' expression ')'
 		self.__compileExprWithinParens()
 
+		# 🏭 not after compiling condition
+		self.vmWriter.writeArithmetic(ArithType.NOT)
+
+		# 🏭 if-goto WHILE_END_n before compiling statements
+		self.vmWriter.writeIfGoto(f'WHILE_END_{N}')
+
 		# '{' statements '}'
 		self.__compileStatementsWithinBrackets()
+
+		# 🏭 goto WHILE_START_n after compiling statements
+		# 🏭 then label WHILE_END_n following that
+		self.vmWriter.writeGoto(f'WHILE_START_{N}')
+		self.vmWriter.writeLabel(f'WHILE_END_{N}')
 
 		# make sure we increment our global counter to generate unique labels
 		self.WHILE_STATEMENT_COUNTER += 1
