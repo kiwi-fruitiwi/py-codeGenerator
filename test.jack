@@ -4,6 +4,6 @@ class Main {
           let n = n + 1;
         }
 
-        return salad;
+        return n;
     }
 }

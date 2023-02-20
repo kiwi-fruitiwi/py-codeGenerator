@@ -76,7 +76,7 @@ class CompilationEngine:
 		self.out = open(outputXmlUri, 'w')
 
 		# indentation level of XML. after each tag, indent contents, then revert
-		self.indentLevel = 0
+		self.indentLevel: int = 0
 
 		# sometimes compileTerm will need to do an additional advance for LL2.
 		# this flag tells us to skip the next advance() if that's the case.
@@ -84,20 +84,20 @@ class CompilationEngine:
 		# unsure about difference between Foo.bar(exprList) vs foo.bar(exprList)
 
 		# if true, the next eat() doesn't advance
-		self.skipNextAdvance = False
+		self.skipNextAdvance: bool = False
 
 		# ops in the Jack Grammar
-		self.opsList = ['+', '-', '*', '/', '&', '|', '<', '>', '=']
+		self.opsList: list = ['+', '-', '*', '/', '&', '|', '<', '>', '=']
 
 		# initialize symbolTable, which creates empty class+srtTables
 		# compileClass will overwrite this instantiation but this is useful for
 		# testing methods
-		self.symbolTables = SymbolTable()
+		self.symbolTables: SymbolTable = SymbolTable()
 
 		# keeps track of the class's name because it's a variable type for our
 		# symbol tables. notably, it's used for 'this' in subRoutineDec
-		self.className = 'undef'
-		self.subroutineName = 'undef'
+		self.className: str = None
+		self.subroutineName: str = None
 
 		# accumulator to track number of variables in srt
 		# compileVarDec increments this while compileSubroutineDec resets to 0
@@ -256,9 +256,9 @@ class CompilationEngine:
 		# reset flag for current subRoutine's return value
 		self.currentSrtIsVoid = None
 
-		# clear our subroutine symbol table
+		# clear our subroutine symbol table and reset subroutineName
 		self.symbolTables.startSubroutine()
-		self.subroutineName = 'unset'
+		self.subroutineName = None
 		self.nLocals = 0
 
 		# skipNextAdvOnEat because we might fail to find a subroutineDec
@@ -997,7 +997,7 @@ class CompilationEngine:
 
 		if self.tk.getTokenType() == TokenType.SYMBOL:
 			if self.tk.symbol() == ';':
-				assert self.currentSrtIsVoid
+				assert self.currentSrtIsVoid, f"'return;' encountered but subroutine {self.subroutineName} needs return value"
 
 				self.eat(';')
 				self.outdent()
@@ -1008,7 +1008,7 @@ class CompilationEngine:
 				return
 		else:
 			# there's an expression in → expression? ';'
-			assert not self.currentSrtIsVoid
+			assert not self.currentSrtIsVoid, f"'return value;' encountered but subroutine {self.subroutineName} is void"
 
 			self.compileExpression()
 			self.vmWriter.writeReturn()
