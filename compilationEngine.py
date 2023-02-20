@@ -106,6 +106,7 @@ class CompilationEngine:
 		# global counter for if and while statements for creating unique labels
 		self.IF_STATEMENT_COUNTER = 0
 		self.WHILE_STATEMENT_COUNTER = 0
+		self.currentSrtIsVoid = None  # does the current subroutine return void?
 
 	def indent(self):
 		self.indentLevel += 1
@@ -252,6 +253,9 @@ class CompilationEngine:
 		:return: True if we found a subroutineDec, False if not.
 			this is so we can use while self.compileSubroutineDec
 		"""
+		# reset flag for current subRoutine's return value
+		self.currentSrtIsVoid = None
+
 		# clear our subroutine symbol table
 		self.symbolTables.startSubroutine()
 		self.subroutineName = 'unset'
@@ -323,9 +327,16 @@ class CompilationEngine:
 
 		# must be void, int, char, boolean, or className
 		if self.tk.getTokenType() == TokenType.KEYWORD and self.tk.keyWord() == 'void':
+			self.currentSrtIsVoid = True
+			print(f'void keyword detected!')
 			self.eat('void')
 		else:  # it must be int, char, boolean, or className, aka 'type'$
+			self.currentSrtIsVoid = False
+
+			print(f'non-void keyword detected!')
 			self.__compileType()
+
+		print(f'{self.currentSrtIsVoid}')
 
 		# TODO → save state: either 'void' or type
 		#	keep track of boolean, 'hasReturnValue'?
@@ -986,6 +997,8 @@ class CompilationEngine:
 
 		if self.tk.getTokenType() == TokenType.SYMBOL:
 			if self.tk.symbol() == ';':
+				assert self.currentSrtIsVoid
+
 				self.eat(';')
 				self.outdent()
 				self.write('</returnStatement>\n')
@@ -995,6 +1008,8 @@ class CompilationEngine:
 				return
 		else:
 			# there's an expression in → expression? ';'
+			assert not self.currentSrtIsVoid
+
 			self.compileExpression()
 			self.vmWriter.writeReturn()
 			self.eat(';')
