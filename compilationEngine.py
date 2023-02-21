@@ -349,7 +349,7 @@ class CompilationEngine:
 		# now that we know the subroutine name, we can output a more detailed
 		# console msg about the return value
 		if self.currentSrtIsVoid:
-			print(f'{self.subroutineName} is void')
+			print(f'{self.className}.{self.subroutineName} is void')
 		else:
 			print(f"{self.className}.{self.subroutineName}'s return type is {self.srtReturnType}")
 
