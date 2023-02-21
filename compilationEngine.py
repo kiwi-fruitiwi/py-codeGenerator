@@ -96,8 +96,8 @@ class CompilationEngine:
 
 		# keeps track of the class's name because it's a variable type for our
 		# symbol tables. notably, it's used for 'this' in subRoutineDec
-		self.className: str = None
-		self.subroutineName: str = None
+		self.className: str = ''
+		self.subroutineName: str = ''
 
 		# accumulator to track number of variables in srt
 		# compileVarDec increments this while compileSubroutineDec resets to 0
@@ -106,7 +106,8 @@ class CompilationEngine:
 		# global counter for if and while statements for creating unique labels
 		self.IF_STATEMENT_COUNTER = 0
 		self.WHILE_STATEMENT_COUNTER = 0
-		self.currentSrtIsVoid = None  # does the current subroutine return void?
+		self.currentSrtIsVoid: bool = None  # does the current subroutine return void?
+		self.srtReturnType: str = ''
 
 	def indent(self):
 		self.indentLevel += 1
@@ -253,12 +254,13 @@ class CompilationEngine:
 		:return: True if we found a subroutineDec, False if not.
 			this is so we can use while self.compileSubroutineDec
 		"""
-		# reset flag for current subRoutine's return value
+		# reset flag for current subRoutine's return value and type
 		self.currentSrtIsVoid = None
+		self.srtReturnType: str = ''
 
 		# clear our subroutine symbol table and reset subroutineName
 		self.symbolTables.startSubroutine()
-		self.subroutineName = None
+		self.subroutineName = ''
 		self.nLocals = 0
 
 		# skipNextAdvOnEat because we might fail to find a subroutineDec
@@ -328,15 +330,10 @@ class CompilationEngine:
 		# must be void, int, char, boolean, or className
 		if self.tk.getTokenType() == TokenType.KEYWORD and self.tk.keyWord() == 'void':
 			self.currentSrtIsVoid = True
-			print(f'void keyword detected!')
 			self.eat('void')
 		else:  # it must be int, char, boolean, or className, aka 'type'$
 			self.currentSrtIsVoid = False
-
-			print(f'non-void keyword detected!')
-			self.__compileType()
-
-		print(f'{self.currentSrtIsVoid}')
+			self.srtReturnType = self.__compileType()
 
 		# TODO → save state: either 'void' or type
 		#	keep track of boolean, 'hasReturnValue'?
@@ -348,6 +345,13 @@ class CompilationEngine:
 
 		# subroutineName
 		self.subroutineName = self.compileSubroutineName()
+
+		# now that we know the subroutine name, we can output a more detailed
+		# console msg about the return value
+		if self.currentSrtIsVoid:
+			print(f'{self.subroutineName} is void')
+		else:
+			print(f"{self.className}.{self.subroutineName}'s return type is {self.srtReturnType}")
 
 		# '(' parameterList ')'
 		self.eat('(')

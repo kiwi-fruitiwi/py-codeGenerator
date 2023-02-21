@@ -1,9 +1,10 @@
-class Main {
-    function int nextMask(int n) {
-        while (n < 10) {
-          let n = n + 1;
+class fillMemoryTest {
+    function int fillMemory(int startAddress, int length, int value) {
+        while (length > 0) {
+            do Memory.poke(startAddress, value);
+            let length = length - 1;
+            let startAddress = startAddress + 1;
         }
-
-        return n;
+        return value;
     }
 }
