@@ -1170,18 +1170,33 @@ class CompilationEngine:
 				assert value in ['true', 'false', 'null', 'this'], value
 
 				# VMWriter handles each of 4 cases separately
-				#
-				# first of all, 'false' is 0, so !false must be (not 0)
-				#	you'd think this is 1, but it's actually -1 :P
-				#	recall that in two's complement, the nth bit is negative:
-				#		so in 1111, we have 7+-8=-1
-				#
-				# thus true can be done in two ways:
-				# 	push constant 0; not → 1 111 1111 1111 = -1
-				# 	push constant 1; neg → 1 111 1111 1111 = -1
+				match value:
+					# first, 'false' is 0, so !false must be (not 0)
+					#	you'd think this is 1, but it's actually -1 :P
+					#	recall that in two's complement, the nth bit is negative:
+					#		so in 1111, we have 7+-8=-1
+					#
+					# → push constant 0
+					case 'false':
+						self.vmWriter.writeSegPush(SegType.CONST, 0)
 
-				# TODO handle this later. usually it's argument 0 in a method
-				#	what happens if we're in the constructor or not in a method?
+					# thus true can be done in two ways:
+					# 	push constant 0; not → 1 111 1111 1111 = -1
+					# 	push constant 1; neg → 1 111 1111 1111 = -1
+					case 'true':
+						self.vmWriter.writeSegPush(SegType.CONST, 0)
+						self.vmWriter.writeArithmetic(ArithType.NOT)
+
+					# the Jack Grammar defines 'null' as 0 as well
+					# I guess this is what all RAM values start as
+					case 'null':
+						self.vmWriter.writeSegPush(SegType.CONST, 0)
+
+					# TODO handle this later. usually it's argument 0 in a method
+					#	what happens if we're in the constructor or not in a method?
+					case 'this':
+						print(
+							f"'this' keyword encountered but no vmWriter call exists")
 				self.write(f'<keyword> {value} </keyword>\n')
 
 			case TokenType.INT_CONST:
