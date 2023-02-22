@@ -1170,7 +1170,18 @@ class CompilationEngine:
 				assert value in ['true', 'false', 'null', 'this'], value
 
 				# VMWriter handles each of 4 cases separately
-				# TODO
+				#
+				# first of all, 'false' is 0, so !false must be (not 0)
+				#	you'd think this is 1, but it's actually -1 :P
+				#	recall that in two's complement, the nth bit is negative:
+				#		so in 1111, we have 7+-8=-1
+				#
+				# thus true can be done in two ways:
+				# 	push constant 0; not → 1 111 1111 1111 = -1
+				# 	push constant 1; neg → 1 111 1111 1111 = -1
+
+				# TODO handle this later. usually it's argument 0 in a method
+				#	what happens if we're in the constructor or not in a method?
 				self.write(f'<keyword> {value} </keyword>\n')
 
 			case TokenType.INT_CONST:
