@@ -104,8 +104,8 @@ class CompilationEngine:
 		self.nLocals = 0
 
 		# global counter for if and while statements for creating unique labels
-		self.IF_STATEMENT_COUNTER = 0
-		self.WHILE_STATEMENT_COUNTER = 0
+		self.IF_STATEMENT_COUNTER: int = 0
+		self.WHILE_STATEMENT_COUNTER: int = 0
 		self.currentSrtIsVoid: bool = None  # does the current subroutine return void?
 		self.srtReturnType: str = ''
 
@@ -795,6 +795,14 @@ class CompilationEngine:
 		self.write('<ifStatement>\n')
 		self.indent()
 
+		# make sure we increment IF_STATEMENT_COUNTER to generate unique labels
+		self.IF_STATEMENT_COUNTER += 1
+
+		# temporary variable to hold the IF_STATEMENT_COUNTER in case it changes
+		# mid-execution during compileIf
+		N: int = self.IF_STATEMENT_COUNTER
+		print(f'enter compileIf: {N}')
+
 		# if '(' expression ')'
 		self.eat('if')
 		self.__compileExprWithinParens()
@@ -802,7 +810,6 @@ class CompilationEngine:
 		# VM writes:
 		# 	'not'
 		# 	'if-goto IF_FALSE_'+ IF_STATEMENT_COUNTER
-		N: int = self.IF_STATEMENT_COUNTER
 		self.vmWriter.writeArithmetic(ArithType.NOT)
 		self.vmWriter.writeIfGoto(f'IF_FALSE_{N}')
 
@@ -836,9 +843,6 @@ class CompilationEngine:
 		else:
 			# arriving here means there's no else clause. no IF_END_n needed
 			self.vmWriter.writeLabel(f'IF_FALSE_{N}')
-
-		# make sure we increment IF_STATEMENT_COUNTER to generate unique labels
-		self.IF_STATEMENT_COUNTER += 1
 
 		self.outdent()
 		self.write('</ifStatement>\n')
