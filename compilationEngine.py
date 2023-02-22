@@ -1307,6 +1307,8 @@ class CompilationEngine:
 					self.vmWriter.writeArithmetic(ArithType.LT)
 				case '>':
 					self.vmWriter.writeArithmetic(ArithType.GT)
+				case '=':
+					self.vmWriter.writeArithmetic(ArithType.EQ)
 
 	# compiles a (possibly empty) comma-separated list of expressions
 	# (expression (',' expression)*)?
