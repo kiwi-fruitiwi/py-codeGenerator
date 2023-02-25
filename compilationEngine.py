@@ -958,7 +958,14 @@ class CompilationEngine:
 				self.write(
 					f'<{kindPrefix}Variable> {identifierName} '
 					f'</{kindPrefix}Variable>\n')
+
+				# vmWriter needs to push this variable on the stack as an
+				# argument for the upcoming writeCall!
+				k: VarKind = st.kindOf(identifierName)
+				i: int = st.indexOf(identifierName)
+				self.vmWriter.writeVarPush(k, i)
 			else:
+				# TODO what do we do for static methods?
 				self.write(f'<className> {identifierName} </className>\n')
 
 			self.eat('.')
