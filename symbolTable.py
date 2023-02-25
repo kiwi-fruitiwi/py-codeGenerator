@@ -95,7 +95,7 @@ class SymbolTable:
 		self.localCount = 0
 
 	# returns True if variable exists in either class or srt-level tables
-	def hasVar(self, keyName: str):
+	def hasVar(self, keyName: str) -> bool:
 		existsInClass: bool = keyName in self.classTable.keys()
 		existsInSubroutine: bool = keyName in self.srtTable.keys()
 
@@ -160,7 +160,7 @@ class SymbolTable:
 
 		raise ValueError(f'{kind} not found')
 
-	def kindOf(self, name: str):
+	def kindOf(self, name: str) -> VarKind:
 		"""
 		returns the kind of the named identifier in the current scope. If the
 		identifier is unknown in the current scope, returns 🌟 NONE 🌟
@@ -180,7 +180,7 @@ class SymbolTable:
 		raise ValueError(f'{name} not found in either symbol table')
 
 
-	def typeOf(self, name: str):
+	def typeOf(self, name: str) -> str:
 		"""
 		:param name: identifier, e.g. x, y, pointCount, this
 		:return: the type of the named identifier in the current scope
@@ -198,7 +198,7 @@ class SymbolTable:
 		raise ValueError(f'{name} not found in either symbol table')
 
 
-	def indexOf(self, name: str):
+	def indexOf(self, name: str) -> int:
 		"""
 		:param name: identifier, e.g. x, y, pointCount, this
 		:return: the index assigned to the named identifier. not count. count+1

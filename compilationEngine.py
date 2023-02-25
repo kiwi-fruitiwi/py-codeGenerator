@@ -978,10 +978,15 @@ class CompilationEngine:
 		expressionCount: int = self.compileExpressionList()
 		self.eat(')')
 
-		# TODO this needs work depending on what idName is: class or var
-		#   for class, output `call className srtName nArgs`
-		#   for var, we want `call typeof(varName) srtName nArgs+1`
-		self.vmWriter.writeCall(identifierName, srtName, expressionCount)
+		# this needs work depending on what idName is: class or var
+		# for class, output `call className srtName nArgs`
+		# for var, we want `call typeof(varName) srtName nArgs+1`
+		if st.hasVar(identifierName):
+			t: str = st.typeOf(identifierName)
+			self.vmWriter.writeCall(t, srtName, expressionCount+1)
+		else:
+			# identifierName is a class!
+			self.vmWriter.writeCall(identifierName, srtName, expressionCount)
 
 	# 'return' expression? ';'
 	def compileReturn(self):
