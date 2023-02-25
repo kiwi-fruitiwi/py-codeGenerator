@@ -170,6 +170,14 @@ class CompilationEngine:
 		while self.compileClassVarDec():
 			continue  # probably unnecessary continue; empty body
 
+		# in order to allocate memory for this object, vmWriter needs
+		#
+		# if there are one or more fields:
+		# 	push constant n ← find n with symbolTable.varCount(VarKind.FIELD)
+		#	call Memory.alloc 1 ← note 1 is nArgs
+		#	pop pointer 0 ← set up the 'this' memory segment base addr pointer
+
+
 		while self.compileSubroutineDec():
 			# TODO: remove temporary extra newline for ease of reading
 			self.write('\n')
