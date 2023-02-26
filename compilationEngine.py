@@ -478,7 +478,6 @@ class CompilationEngine:
 		#	call Memory.alloc 1 ← note 1 is nArgs
 		#	pop pointer 0 ← set up the 'this' memory segment base addr pointer
 		if isConstructor:
-			print(f'constructor!')
 			fieldCount: int = self.symbolTables.varCount(VarKind.FIELD)
 			self.vmWriter.writeSegPush(SegType.CONST, fieldCount)
 			self.vmWriter.writeCall('Memory', 'alloc', 1)
@@ -1230,8 +1229,7 @@ class CompilationEngine:
 					# TODO handle this later. usually it's argument 0 in a method
 					#	what happens if we're in the constructor or not in a method?
 					case 'this':
-						print(
-							f"'this' keyword encountered but no vmWriter call exists")
+						self.vmWriter.writeSegPush(SegType.POINTER, 0)
 				self.write(f'<keyword> {value} </keyword>\n')
 
 			case TokenType.INT_CONST:
