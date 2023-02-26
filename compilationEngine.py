@@ -170,14 +170,6 @@ class CompilationEngine:
 		while self.compileClassVarDec():
 			continue  # probably unnecessary continue; empty body
 
-		# in order to allocate memory for this object, vmWriter needs
-		#
-		# if there are one or more fields:
-		# 	push constant n ← find n with symbolTable.varCount(VarKind.FIELD)
-		#	call Memory.alloc 1 ← note 1 is nArgs
-		#	pop pointer 0 ← set up the 'this' memory segment base addr pointer
-
-
 		while self.compileSubroutineDec():
 			# TODO: remove temporary extra newline for ease of reading
 			self.write('\n')
@@ -312,6 +304,9 @@ class CompilationEngine:
 		pattern: ('constructor'|'function'|'method') ('void'|type)
 			subroutineName '('parameterList')' subroutineBody
 		"""
+		# set a flag for whether we encountered a constructor
+		isConstructor: bool = False
+
 		self.write('<subroutineDec>\n')
 		self.indent()
 
@@ -331,6 +326,10 @@ class CompilationEngine:
 		# probably not necessary for constructor, but let's start with it in
 		if keywordValue in ['method', 'constructor']:
 			self.symbolTables.define('this', self.className, VarKind.ARG)
+
+			# we'll use this later to see if we allocate memory for a new object
+			if keywordValue == 'constructor':
+				isConstructor = True
 
 		# ('void'|type)
 		self.peek()
@@ -367,7 +366,7 @@ class CompilationEngine:
 		self.eat(')')
 
 		# subroutineBody → { varDec* statements }
-		self.compileSubroutineBody()
+		self.compileSubroutineBody(isConstructor)
 		print(f'\n{self.symbolTables.getSrtLevelSymTableRepr(self.subroutineName)}')
 
 		self.outdent()
@@ -425,7 +424,7 @@ class CompilationEngine:
 
 	# compiles a subroutine's body
 	# pattern: '{' varDec* statements'}'
-	def compileSubroutineBody(self):
+	def compileSubroutineBody(self, isConstructor: bool):
 		"""
 		<subroutineBody>
 		  <symbol> { </symbol>
@@ -472,6 +471,18 @@ class CompilationEngine:
 			self.peek()
 
 		self.vmWriter.writeFunction(self.className, self.subroutineName, self.nLocals)
+
+		# in order to allocate memory for this object, vmWriter needs:
+		#   push constant n ← find n with symbolTable.varCount(VarKind.FIELD)
+		#		if 0 fields, object still needs a memory location and base addr
+		#	call Memory.alloc 1 ← note 1 is nArgs
+		#	pop pointer 0 ← set up the 'this' memory segment base addr pointer
+		if isConstructor:
+			print(f'constructor!')
+			fieldCount: int = self.symbolTables.varCount(VarKind.FIELD)
+			self.vmWriter.writeSegPush(SegType.CONST, fieldCount)
+			self.vmWriter.writeCall('Memory', 'alloc', 1)
+			self.vmWriter.writePop(SegType.POINTER, 0)
 
 		# statements always starts with keyword in [let, if, while, do, return]
 		self.compileStatements()
