@@ -93,7 +93,7 @@ class VMWriter:
 		"""
 		writes a VM function command, e.g. 'function SimpleFunction.test 2'
 		"""
-		self.out.write(f'function {className}.{functionName} {nLocals}\n')
+		self.out.write(f'\nfunction {className}.{functionName} {nLocals}\n')
 
 
 	def writeReturn(self):
