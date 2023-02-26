@@ -28,7 +28,7 @@ from typing import Dict
 
 class VarKind(enum.Enum):
 	STATIC = "static"
-	FIELD = "field"
+	FIELD = "this"
 	ARG = "argument"
 	VAR = "local"
 
