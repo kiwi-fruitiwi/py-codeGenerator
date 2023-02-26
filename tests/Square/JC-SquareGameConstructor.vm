@@ -1,3 +1,4 @@
+
 function SquareGame.new 0
 push constant 2
 call Memory.alloc 1

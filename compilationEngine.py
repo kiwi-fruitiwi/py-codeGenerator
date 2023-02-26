@@ -694,7 +694,7 @@ class CompilationEngine:
 	# returns subroutine's name
 	def compileSubroutineName(self) -> str:
 		self.advance()
-		assert self.tk.getTokenType() == TokenType.IDENTIFIER, f'{self.tk.getTokenType()}'
+		assert self.tk.getTokenType() == TokenType.IDENTIFIER, f'{self.tk.getTokenType(), self.tk.symbol()}'
 		self.write(
 			f'<subroutineName> {self.tk.identifier()} </subroutineName>\n')
 		return self.tk.identifier()
@@ -972,11 +972,19 @@ class CompilationEngine:
 	# 2. (className|varName).subroutineName(expressionList)
 	# upon reading the first identifier token, we can peek at the next token
 	# if it's a ., we must be in case 2 and identify (className|varName)
-	# if it's (, we are in case 1 and it's easy.
+	# if it's (, we are in case 1 → compile our parameter, 'identifierName'
 	def __compileSubroutineCallHelper(self, identifierName):
 		st = self.symbolTables
+		isSubroutineOnly: bool = False  # True if case 1, False if case 2
 
-		if self.tk.symbol() == '.':
+		if self.tk.symbol() == '(':  # this is case 1! srtName(exprList)
+			srtName: str = identifierName
+			isSubroutineOnly = True
+			self.write(
+				f'<subroutineName> {identifierName} </subroutineName>\n')
+		else:
+			assert self.tk.symbol() == '.'
+			isSubroutineOnly = False
 			# we are in case 2! (className|varName).srtName(expressionList)
 			# check the symbolTable for varName. if not found, it's a className
 			if st.hasVar(identifierName):
@@ -997,10 +1005,10 @@ class CompilationEngine:
 				self.write(f'<className> {identifierName} </className>\n')
 
 			self.eat('.')
+			srtName: str = self.compileSubroutineName()
 
-		# now process the common tail grammar: subroutineName(expressionList)
-		srtName: str = self.compileSubroutineName()
-
+		# we've taken care of 'subroutineName'
+		# now process the common tail grammar: (expressionList)
 		# then eat('(') → compileExpressionList
 		self.eat('(')
 		expressionCount: int = self.compileExpressionList()
@@ -1009,12 +1017,18 @@ class CompilationEngine:
 		# this needs work depending on what idName is: class or var
 		# for class, output `call className srtName nArgs`
 		# for var, we want `call typeof(varName) srtName nArgs+1`
+		if isSubroutineOnly:
+			self.vmWriter.writeCall(self.className, srtName, expressionCount+1)
+			return
+
 		if st.hasVar(identifierName):
 			t: str = st.typeOf(identifierName)
 			self.vmWriter.writeCall(t, srtName, expressionCount+1)
-		else:
-			# identifierName is a class!
-			self.vmWriter.writeCall(identifierName, srtName, expressionCount)
+			return
+
+		# TODO identifierName is a class!
+		print(f'writeCall for class only: probably wrong 🔥: {identifierName}.{srtName}')
+		self.vmWriter.writeCall(identifierName, srtName, expressionCount)
 
 	# 'return' expression? ';'
 	def compileReturn(self):
