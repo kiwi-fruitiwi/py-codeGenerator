@@ -829,7 +829,6 @@ class CompilationEngine:
 		# temporary variable to hold the IF_STATEMENT_COUNTER in case it changes
 		# mid-execution during compileIf
 		N: int = self.IF_STATEMENT_COUNTER
-		print(f'enter compileIf: {N}')
 
 		# if '(' expression ')'
 		self.eat('if')
@@ -1017,7 +1016,11 @@ class CompilationEngine:
 		# this needs work depending on what idName is: class or var
 		# for class, output `call className srtName nArgs`
 		# for var, we want `call typeof(varName) srtName nArgs+1`
+		#
+		# remember we need to push 'this' on the stack as a method's arg 0
+		# TODO make sure this works for multiple arguments
 		if isSubroutineOnly:
+			self.vmWriter.writeSegPush(SegType.POINTER, 0)  # this
 			self.vmWriter.writeCall(self.className, srtName, expressionCount+1)
 			return
 
@@ -1027,7 +1030,7 @@ class CompilationEngine:
 			return
 
 		# TODO identifierName is a class!
-		print(f'writeCall for class only: probably wrong 🔥: {identifierName}.{srtName}')
+		print(f'writeCall for class method: possibly wrong 🔥: {identifierName}.{srtName}')
 		self.vmWriter.writeCall(identifierName, srtName, expressionCount)
 
 	# 'return' expression? ';'
