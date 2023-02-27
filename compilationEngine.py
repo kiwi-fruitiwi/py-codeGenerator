@@ -105,7 +105,7 @@ class CompilationEngine:
 
 		# global counter for if and while statements for creating unique labels
 		self.IF_STATEMENT_COUNTER: int = -1  # we inc immediately, so start at 0
-		self.WHILE_STATEMENT_COUNTER: int = 0
+		self.WHILE_STATEMENT_COUNTER: int = -1
 		self.currentSrtIsVoid: bool = None  # does the current subroutine return void?
 		self.srtReturnType: str = ''
 
@@ -884,7 +884,13 @@ class CompilationEngine:
 
 	# 'while' '(' expression ')' '{' statements '}'
 	def compileWhile(self):
-		# set up an alias for our global while statement counter
+
+		# make sure we increment our global counter to generate unique labels
+		# this needs to come first, otherwise nested statements will have the
+		# same counter
+		self.WHILE_STATEMENT_COUNTER += 1
+
+		# set up an alias for our global while statement counter. snapshot
 		N: int = self.WHILE_STATEMENT_COUNTER
 
 		# 🏭 label WHILE_START_n before compiling the condition
@@ -911,9 +917,6 @@ class CompilationEngine:
 		# 🏭 then label WHILE_END_n following that
 		self.vmWriter.writeGoto(f'WHILE_START_{N}')
 		self.vmWriter.writeLabel(f'WHILE_END_{N}')
-
-		# make sure we increment our global counter to generate unique labels
-		self.WHILE_STATEMENT_COUNTER += 1
 
 		self.outdent()
 		self.write('</whileStatement>\n')
