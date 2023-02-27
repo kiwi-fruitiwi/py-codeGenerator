@@ -848,23 +848,23 @@ class CompilationEngine:
 
 		# (else '{' statements '}')?
 		self.peek()  # check for else token
-		if self.tk.getTokenType() == TokenType.KEYWORD:
-			if self.tk.keyWord() == 'else':
-				# okay, else clause detected. we need
-				self.vmWriter.writeGoto(f'IF_END_{N}')
-				self.vmWriter.writeLabel(f'IF_FALSE_{N}')
+		if self.tk.getTokenType() == TokenType.KEYWORD and \
+			self.tk.keyWord() == 'else':
 
-				self.write('<elseStatement>\n')
-				self.indent()
-				self.eat('else')
-				self.__compileStatementsWithinBrackets()
-				self.outdent()
-				self.write('</elseStatement>\n')
+			# okay, else clause detected. we need labels
+			self.vmWriter.writeGoto(f'IF_END_{N}')
+			self.vmWriter.writeLabel(f'IF_FALSE_{N}')
 
-				# VM writes:
-				# 	label IF_END_n
-				self.vmWriter.writeLabel(f'IF_END_{N}')
+			self.write('<elseStatement>\n')
+			self.indent()
+			self.eat('else')
+			self.__compileStatementsWithinBrackets()
+			self.outdent()
+			self.write('</elseStatement>\n')
 
+			# VM writes:
+			# 	label IF_END_n
+			self.vmWriter.writeLabel(f'IF_END_{N}')
 		else:
 			# arriving here means there's no else clause. no IF_END_n needed
 			self.vmWriter.writeLabel(f'IF_FALSE_{N}')
