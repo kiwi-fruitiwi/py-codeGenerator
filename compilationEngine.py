@@ -104,7 +104,7 @@ class CompilationEngine:
 		self.nLocals = 0
 
 		# global counter for if and while statements for creating unique labels
-		self.IF_STATEMENT_COUNTER: int = 0
+		self.IF_STATEMENT_COUNTER: int = -1  # we inc immediately, so start at 0
 		self.WHILE_STATEMENT_COUNTER: int = 0
 		self.currentSrtIsVoid: bool = None  # does the current subroutine return void?
 		self.srtReturnType: str = ''
