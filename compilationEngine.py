@@ -321,22 +321,20 @@ class CompilationEngine:
 		keywordValue = self.tk.keyWord()
 		self.write(f'<keyword> {keywordValue} </keyword>\n')
 
-		# if we have a method or constructor, add 'this' to the srt symbol table
+		# we'll use this later to see if we allocate memory for a new object
+		if keywordValue == 'constructor':
+			isConstructor = True
+
+		# if we have a method add 'this' to the subroutine symbol table
 		# 	to do this we call self.symbolTable.define(name, vType, kind) with:
 		# 		name=this, vType=what the class is, kind=argument
-		# probably not necessary for constructor, but let's start with it in
-		if keywordValue in ['method', 'constructor']:
+		# this is not necessary for the constructor
+		if keywordValue == 'method':
 			self.symbolTables.define('this', self.className, VarKind.ARG)
-
-			# we'll use this later to see if we allocate memory for a new object
-			if keywordValue == 'constructor':
-				isConstructor = True
-
 			# used later to set 'pointer 0' to this, 'argument 0'
-			if keywordValue == 'method':
-				isMethod = True
+			isMethod = True
 
-		# ('void'|type)
+		# what is the next token? the jack grammar says: ('void'|type)
 		self.peek()
 
 		# must be void, int, char, boolean, or className
