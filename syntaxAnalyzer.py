@@ -137,4 +137,4 @@ def main(uri: str) -> None:
         print(f'🍒 neither file or directory detected')
 
 
-main('tests/Square')
+main('test.jack')
