@@ -498,7 +498,7 @@ class CompilationEngine:
 
 		if isMethod:
 			self.vmWriter.writeVarPush(SegType.ARG, 0)
-			self.vmWriter.writePop(SegType.POINTER, 0)
+			self.vmWriter.writeSegPop(SegType.POINTER, 0)
 
 		# in order to allocate memory for this object, vmWriter needs:
 		#   push constant n ← find n with symbolTable.varCount(VarKind.FIELD)
@@ -510,7 +510,7 @@ class CompilationEngine:
 			fieldCount: int = self.symbolTables.varCount(VarKind.FIELD)
 			self.vmWriter.writeSegPush(SegType.CONST, fieldCount)
 			self.vmWriter.writeCall('Memory', 'alloc', 1)
-			self.vmWriter.writePop(SegType.POINTER, 0)
+			self.vmWriter.writeSegPop(SegType.POINTER, 0)
 
 		# statements always starts with keyword in [let, if, while, do, return]
 		self.compileStatements()
@@ -1000,7 +1000,7 @@ class CompilationEngine:
 
 		# when a doStatement occurs, nothing is done with the function's retVal
 		# so we can get rid of it with pop temp 0
-		self.vmWriter.writePop(SegType.TEMP, 0)
+		self.vmWriter.writeSegPop(SegType.TEMP, 0)
 
 	# we have either of two symbols, '.' or '(':
 	# 1. subroutineName(expressionList), or

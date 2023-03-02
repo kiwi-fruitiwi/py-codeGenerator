@@ -47,9 +47,16 @@ class VMWriter:
 		"""
 		self.out.write(f'push {segment.value} {index}\n')
 
-	def writePop(self, segment: SegType, index: int):
+	def writeSegPop(self, segment: SegType, index: int):
 		"""
 		writes a VM pop command, e.g. 'pop argument 0'
+		"""
+		self.out.write(f'pop {segment.value} {index}\n')
+
+	def writeVarPop(self, segment: VarKind, index: int):
+		"""
+		writes a VM pop command, e.g. 'pop argument 0'
+		but supports SymbolTable's VarKind enumeration instead of our SegType
 		"""
 		self.out.write(f'pop {segment.value} {index}\n')
 
