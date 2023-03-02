@@ -119,6 +119,17 @@ class CompilationEngine:
 		stKind: VarKind = st.kindOf(varName)
 		self.vmWriter.writeVarPush(stKind, stIndex)
 
+	# same as writePushVariable, but for popping off the stack into a desired
+	# memory segment
+	def vmPopVariable(self, varName: str):
+		st: SymbolTable = self.symbolTables
+		assert st.hasVar(varName)
+
+		stIndex: int = st.indexOf(varName)
+		stKind: VarKind = st.kindOf(varName)
+		self.vmWriter.writeVarPop(stKind, stIndex)
+
+
 	def indent(self):
 		self.indentLevel += 1
 
@@ -772,12 +783,26 @@ class CompilationEngine:
 		assert self.tk.getTokenType() == TokenType.SYMBOL
 		assert self.tk.symbol() == '[' or self.tk.symbol() == '='
 
+		# we've encountered an array on the left-hand side!
 		# if next token is '[', eat('['), compileExpr, eat(']')
 		if self.tk.symbol() == '[':
 			self.eat('[')
+
+			# this is the array offset
 			self.compileExpression()
+
+			# get the base address of the array via symbolTable lookup
+			# push it onto the stack so we can add it to the offset
+			self.vmPushVariable(varName)
+			self.vmWriter.writeArithmetic(ArithType.ADD)
+
 			self.eat(']')
-			self.peek()  # reach the '='
+
+			# we have to peek here to maintain the peeking 'state' since outside
+			# our if statement, we've peeked at the next token already
+			# we are expected to reach the '=' of the let statement grammar
+			# 	'let' varName ('[' expression ']')? '=' expression ';'
+			self.peek()
 
 		# we are guaranteed the next symbol is '='
 		# eat it, compileExpr, eat(';')
@@ -789,19 +814,19 @@ class CompilationEngine:
 		# can also be true, false, null, this ← keywords!
 		# → actually, these are both taken care of in compileExpr,Term
 		self.compileExpression()
+
+		# since it's possible this expression was an array access, we have to
+		# pop its address into temp 0 to prevent clobbering the left-hand side's
+		# array access
+
 		self.eat(';')
 
 		self.outdent()
 		self.write('</letStatement>\n')
 
-		# TODO make sure the result of the expression is popped into the memSeg
-		#  of the defined variable
-		st = self.symbolTables
-		assert st.hasVar(varName)
-
-		stIndex: int = st.indexOf(varName)
-		stKind: VarKind = st.kindOf(varName)
-		self.vmWriter.writePop(stKind, stIndex)
+		# make sure the result of the expression is popped into the memSeg
+		# of the defined variable
+		self.vmPopVariable(varName)
 
 	# compiles an if statement, possibly with a trailing else clause
 	# if '(' expression ')' '{' statements '}' (else '{' statements '}')?
