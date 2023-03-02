@@ -109,6 +109,16 @@ class CompilationEngine:
 		self.currentSrtIsVoid: bool = None  # does the current subroutine return void?
 		self.srtReturnType: str = ''
 
+	# pushes a variable onto the stack after looking it up in the symbolTables
+	# e.g. arr → 'push local 0'
+	def vmPushVariable(self, varName: str):
+		st: SymbolTable = self.symbolTables
+		assert st.hasVar(varName)
+
+		stIndex: int = st.indexOf(varName)
+		stKind: VarKind = st.kindOf(varName)
+		self.vmWriter.writeVarPush(stKind, stIndex)
+
 	def indent(self):
 		self.indentLevel += 1
 
@@ -1176,10 +1186,24 @@ class CompilationEngine:
 							self.__compileSubroutineCallHelper(identifier)
 
 						case '[':  # matches varName[expression]
+							print(f'[  DEBUG  ] inside compileTerm []')
+
 							assert not classOrSrtName
+							arrayName: str = identifier
+
+							# get the value of the variable ← symbolTable lookup
+							# push it onto the stack
+							self.vmPushVariable(arrayName)
+
 							self.eat('[')
 							self.compileExpression()
 							self.eat(']')
+
+							# compile the expression → it's now at the top of
+							# the stack; note if it's 0, ignore the next add
+							# actually no we can't check it from here without
+							# a return value from compileExpression!
+							self.vmWriter.writeArithmetic(ArithType.ADD)
 
 						# these are all ops!
 						case '+' | '-' | '*' | '/' | '&' | '|' | '<' | '>' | '=':
