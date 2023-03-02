@@ -1211,6 +1211,8 @@ class CompilationEngine:
 					assert st.hasVar(identifier)
 					self.vmWriter.writeVarPush(kind, st.indexOf(identifier))
 
+					# TODO make above a vmPushVariable call?
+
 				# we need to advance one more time to check 4 LL2 cases
 				#   foo ← varName
 				#	foo'['expression']' ← varName'['expression']'
@@ -1234,19 +1236,27 @@ class CompilationEngine:
 							assert not classOrSrtName
 							arrayName: str = identifier
 
-							# get the value of the variable ← symbolTable lookup
-							# push it onto the stack
-							self.vmPushVariable(arrayName)
-
 							self.eat('[')
-							self.compileExpression()
-							self.eat(']')
 
-							# compile the expression → it's now at the top of
-							# the stack; note if it's 0, ignore the next add
-							# actually no we can't check it from here without
-							# a return value from compileExpression!
+							# inside '[]' is the array offset
+							self.compileExpression()
+							# get the value of the variable ← symbolTable lookup
+							# push it onto the stack: it's the base address
+
+							# this variable has been compiled already above in
+							#  case TokenType.IDENTIFIER:
+							#  self.vmPushVariable(arrayName)
+
+							# add the array offset and the base addr together!
 							self.vmWriter.writeArithmetic(ArithType.ADD)
+
+							# pop pointer 1 to set THAT
+							self.vmWriter.writeSegPop(SegType.POINTER, 1)
+
+							# push that 0 ← put array[offset]'s value onto stack
+							self.vmWriter.writeSegPush(SegType.THAT, 0)
+
+							self.eat(']')
 
 						# these are all ops!
 						case '+' | '-' | '*' | '/' | '&' | '|' | '<' | '>' | '=':
