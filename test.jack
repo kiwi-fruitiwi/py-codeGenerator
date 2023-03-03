@@ -2,7 +2,7 @@ class Main {
    function void main() {
      var Array arr;
 
-     let arr[2] = 5;
+     let arr[2] = a[5];
      return;
    }
 }
