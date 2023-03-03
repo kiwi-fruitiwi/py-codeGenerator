@@ -766,6 +766,9 @@ class CompilationEngine:
 		letStatement: 'let' varName ('[' expression ']')? '=' expression ';'
 		:return:
 		"""
+		# a flag to indicate if there's an array on the left-hand side used to
+		# handle assignment later
+		arrayLeftSide: bool = False
 		self.write('<letStatement>\n')
 		self.indent()
 
@@ -786,6 +789,8 @@ class CompilationEngine:
 		# we've encountered an array on the left-hand side!
 		# if next token is '[', eat('['), compileExpr, eat(']')
 		if self.tk.symbol() == '[':
+			arrayLeftSide = True
+
 			self.eat('[')
 
 			# this is the array offset
@@ -815,18 +820,31 @@ class CompilationEngine:
 		# → actually, these are both taken care of in compileExpr,Term
 		self.compileExpression()
 
-		# since it's possible this expression was an array access, we have to
+		# if an array was detected on the left side of the equation, we have to
 		# pop its address into temp 0 to prevent clobbering the left-hand side's
 		# array access
+		if arrayLeftSide:
+			# push temp 0 to put right-hand value on the stack in case it's
+			# also an array and needs pointer 1
+			self.vmWriter.writeSegPop(SegType.TEMP, 0)
+
+			# pop pointer 1 to set THAT. this is the left-hand side value!
+			self.vmWriter.writeSegPop(SegType.POINTER, 1)
+
+			# push temp 0, our right-hand value, back on the stack
+			self.vmWriter.writeSegPush(SegType.TEMP, 0)
+
+			# pop that 0 to assign the value to the correct base address +offset
+			self.vmWriter.writeSegPop(SegType.THAT, 0)
+
+		else: # no array exists, so we don't have to use temp 0
+			# make sure the result of the expression is popped into the memSeg
+			# of the defined variable
+			self.vmPopVariable(varName)
 
 		self.eat(';')
-
 		self.outdent()
 		self.write('</letStatement>\n')
-
-		# make sure the result of the expression is popped into the memSeg
-		# of the defined variable
-		self.vmPopVariable(varName)
 
 	# compiles an if statement, possibly with a trailing else clause
 	# if '(' expression ')' '{' statements '}' (else '{' statements '}')?
