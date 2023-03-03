@@ -1207,11 +1207,8 @@ class CompilationEngine:
 					# if we came in via compileExpressionList, we need to push
 					# every varName in the expressionList onto the stack to
 					# prepare for a function call
-					st: SymbolTable = self.symbolTables
-					assert st.hasVar(identifier)
-					self.vmWriter.writeVarPush(kind, st.indexOf(identifier))
-
-					# TODO make above a vmPushVariable call?
+					#
+					# we will do this later after peeking!
 
 				# we need to advance one more time to check 4 LL2 cases
 				#   foo ← varName
@@ -1221,6 +1218,8 @@ class CompilationEngine:
 				#		bar'('expressionList')'
 				self.peek()
 				tokenType = self.tk.getTokenType()
+
+				# TODO ensure this is this the only option
 				if tokenType == TokenType.SYMBOL:
 					advTokenValue = self.tk.symbol()
 					match advTokenValue:
@@ -1228,6 +1227,8 @@ class CompilationEngine:
 							# we're at the end of the line! we can stop here
 							pass
 						case '.' | '(':
+							# push the identifier from earlier before srt
+							self.vmPushVariable(identifier)
 							self.__compileSubroutineCallHelper(identifier)
 
 						case '[':  # matches varName[expression]
@@ -1243,9 +1244,8 @@ class CompilationEngine:
 							# get the value of the variable ← symbolTable lookup
 							# push it onto the stack: it's the base address
 
-							# this variable has been compiled already above in
-							#  case TokenType.IDENTIFIER:
-							#  self.vmPushVariable(arrayName)
+							# TODO ensure no other branches need this
+							self.vmPushVariable(arrayName)
 
 							# add the array offset and the base addr together!
 							self.vmWriter.writeArithmetic(ArithType.ADD)
