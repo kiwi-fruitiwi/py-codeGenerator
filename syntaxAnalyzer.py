@@ -137,4 +137,5 @@ def main(uri: str) -> None:
         print(f'🍒 neither file or directory detected')
 
 
-main('test.jack')
+main('tests/Square/SquareGame.jack')
+# main('test.jack')

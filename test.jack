@@ -1,8 +1,8 @@
 class Main {
    function void main() {
-     var Array arr;
+     var String s;
+     let s = "Hello!";
 
-     let arr[2] = arr[5];
      return;
    }
 }

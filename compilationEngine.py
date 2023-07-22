@@ -113,7 +113,8 @@ class CompilationEngine:
 	# e.g. arr → 'push local 0'
 	def vmPushVariable(self, varName: str):
 		st: SymbolTable = self.symbolTables
-		assert st.hasVar(varName)
+		print(f'{st}')
+		assert st.hasVar(varName), f'{varName}'
 
 		stIndex: int = st.indexOf(varName)
 		stKind: VarKind = st.kindOf(varName)
@@ -550,6 +551,7 @@ class CompilationEngine:
 		# var type varName
 		self.eat('var')
 		vType: str = self.__compileType()
+		print(f'🍓 vType → {vType}')
 
 		# varName (',' varName)*';'
 		self.__compileVarNameList(vType, VarKind.VAR)
@@ -778,6 +780,7 @@ class CompilationEngine:
 		# className, varName, subRName all identifiers ← 'program structure'
 		# this variable has to be defined in order for let to be used
 		varName: str = self.compileDefinedVariable()
+		print(f'🍒 {varName} defined already')
 
 		# check next token for two options: '[' or '='
 		self.peek()
@@ -837,14 +840,17 @@ class CompilationEngine:
 			# pop that 0 to assign the value to the correct base address +offset
 			self.vmWriter.writeSegPop(SegType.THAT, 0)
 
-		else: # no array exists, so we don't have to use temp 0
-			# make sure the result of the expression is popped into the memSeg
-			# of the defined variable
-			self.vmPopVariable(varName)
+		else:
+			# no array exists, so we don't have to use temp 0
+			pass
 
 		self.eat(';')
 		self.outdent()
 		self.write('</letStatement>\n')
+
+		# make sure the result of the expression is popped into the memSeg
+		# of the defined variable
+		self.vmPopVariable(varName)
 
 	# compiles an if statement, possibly with a trailing else clause
 	# if '(' expression ')' '{' statements '}' (else '{' statements '}')?
@@ -1084,7 +1090,7 @@ class CompilationEngine:
 			return
 
 		# TODO identifierName is a class!
-		print(f'writeCall for class method: possibly wrong 🔥: {identifierName}.{srtName}')
+		print(f'writeCall for class method 🔥{identifierName}.{srtName}')
 		self.vmWriter.writeCall(identifierName, srtName, expressionCount)
 
 	# 'return' expression? ';'
@@ -1191,6 +1197,7 @@ class CompilationEngine:
 					# 	case '(': write <srtName> as tag
 					#	case '.': must be className → '.' → srtName
 					classOrSrtName = True
+					print(f'🍒 class/srtName detected: {classOrSrtName} for {identifier}')
 
 					# we will take care of token output in LL2 cases below!
 				else:
@@ -1228,7 +1235,7 @@ class CompilationEngine:
 							pass
 						case '.' | '(':
 							# push the identifier from earlier before srt
-							self.vmPushVariable(identifier)
+							# 🍒 self.vmPushVariable(identifier)
 							self.__compileSubroutineCallHelper(identifier)
 
 						case '[':  # matches varName[expression]
