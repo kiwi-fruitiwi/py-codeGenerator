@@ -193,7 +193,7 @@ class CompilationEngine:
 			continue  # probably unnecessary continue; empty body
 
 		while self.compileSubroutineDec():
-			# TODO: remove temporary extra newline for ease of reading
+			# TODO: temporary extra newline for ease of reading in xml output
 			self.write('\n')
 			continue
 
@@ -498,7 +498,8 @@ class CompilationEngine:
 		self.vmWriter.writeFunction(self.className, self.subroutineName, self.nLocals)
 
 		if isMethod:
-			self.vmWriter.writeVarPush(SegType.ARG, 0)
+			# TODO check change from SegType.ARG in line below
+			self.vmWriter.writeVarPush(VarKind.ARG, 0)
 			self.vmWriter.writeSegPop(SegType.POINTER, 0)
 
 		# in order to allocate memory for this object, vmWriter needs:
