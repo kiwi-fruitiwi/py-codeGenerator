@@ -794,6 +794,7 @@ class CompilationEngine:
 		# if next token is '[', eat('['), compileExpr, eat(']')
 		if self.tk.symbol() == '[':
 			arrayLeftSide = True
+			print(f'🥬 array detected in left side of let statement')
 
 			self.eat('[')
 
@@ -1164,6 +1165,8 @@ class CompilationEngine:
 
 		unaryOp is ['-', '~']
 		"""
+		print(f'🪶 compileTerm')
+
 		# 🏭 integerConst stringConst keywordConst identifier unaryOp→term
 		# remember that keywordConstants are false, true, null, this
 		self.write('<term>\n')
@@ -1211,6 +1214,14 @@ class CompilationEngine:
 					tag: str = kind.value  # e.g. static field argument local
 					self.write(
 						f'<{tag}Variable> {identifier} </{tag}Variable>\n')
+
+					stIndex: int = self.symbolTables.indexOf(identifier)
+					print(
+						f'🫐 identifier {identifier} in symbolTable detected →'
+						f' kind: {kind}, index: {stIndex}'
+					)
+
+					self.vmPushVariable(identifier)
 
 					# if we came in via compileExpressionList, we need to push
 					# every varName in the expressionList onto the stack to
@@ -1392,6 +1403,8 @@ class CompilationEngine:
 		→ i * (-j)
 		pattern: term (op term)*
 		"""
+
+		print(f'🍋 compiling expression!')
 
 		# keep track of any ops we see from self.opsList
 		# reverse list at the end of expression to apply them one by one
