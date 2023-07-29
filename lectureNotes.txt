@@ -103,9 +103,9 @@
 			square: constructors, methods, expression including method calls
 				multiple files! Square, SquareGame, Main
 			average: arrays and strings
-			pong: complete object-oriented app with objects, static vars
-				compile Bat, PongGame, Main, Ball
-				delay execution. reduce speed slider to play game
+            pong: complete object-oriented app with objects, static vars
+                compile Bat, PongGame, Main, Ball
+                delay execution. reduce speed slider to play game
 			complexArrays: handles array manipulation with fancy indices
 				a[b[a[3]]] = a[a[5]] * b[7-a[3]-Main.double(2)+1];
 				test easily via screen's Output

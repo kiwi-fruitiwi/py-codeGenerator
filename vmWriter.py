@@ -31,7 +31,7 @@ class VMWriter:
 	# set the DEBUG flag to True when you want extra variable name info in the
 	# vm output. very handy!
 	DEBUG: bool = True
-	maxLineWidth: int = 20
+	maxLineWidth: int = 28
 
 	def __init__(self, outputUri):
 		"""
