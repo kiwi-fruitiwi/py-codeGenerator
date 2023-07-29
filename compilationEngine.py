@@ -1077,10 +1077,8 @@ class CompilationEngine:
 					f'</{kindPrefix}Variable>\n')
 
 				# vmWriter needs to push this variable on the stack as an
-				# argument for the upcoming writeCall!
-				k: VarKind = st.kindOf(identifierName)
-				i: int = st.indexOf(identifierName)
-				self.vmWriter.writeVarPush(k, i)
+				# argument for the upcoming writeCall
+				self.vmPushVariable(identifierName)
 			else:
 				# TODO what do we do for static methods?
 				self.write(f'<className> {identifierName} </className>\n')
