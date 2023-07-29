@@ -144,5 +144,5 @@ def main(uri: str) -> None:
         print(f'⚠️ neither file or directory detected')
 
 
-main('tests/Average/snippets/SimpleArrAssign.jack')
+main('tests/Average/snippets/PrintString.jack')
 # main('test.jack')

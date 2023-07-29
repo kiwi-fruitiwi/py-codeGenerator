@@ -30,7 +30,7 @@ class ArithType(enum.Enum):
 class VMWriter:
 	# set the DEBUG flag to True when you want extra variable name info in the
 	# vm output. very handy!
-	DEBUG: bool = False
+	DEBUG: bool = True
 	maxLineWidth: int = 20
 
 	def __init__(self, outputUri):

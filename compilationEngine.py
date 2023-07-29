@@ -1382,11 +1382,30 @@ class CompilationEngine:
 
 			case TokenType.STRING_CONST:
 				self.advance()
-				value = self.tk.stringVal()
+				strValue = self.tk.stringVal()
+				self.write(f'<stringConstant> {strValue} </stringConstant>\n')
 
 				# VMWriter uses OS method to handle string constants
-				# TODO
-				self.write(f'<stringConstant> {value} </stringConstant>\n')
+				# we need to find string length and ASCII value via ord()
+				print(f'[ DETECT ] string constant → {strValue}')
+
+				# push the length of the str on the stack as parameter to the
+				# String.new following
+				self.vmWriter.writeSegPush(SegType.CONST, len(strValue))
+
+				# writes 'call String.new 1', with the argument as the length
+				self.vmWriter.writeCall('String', 'new', 1)
+
+				# iterate through characters in the string, pushing their ord
+				# values onto the stack as parameters for String.appendChar.
+				# note that str.appendChar has two arguments: the previous str
+				# and the new character. then it returns a string, which means
+				# it puts the base address of the string it appended on the
+				# stack!
+				for char in strValue:
+					self.vmWriter.writeSegPush(SegType.CONST, ord(char))
+					self.vmWriter.writeCall('String', 'appendChar', 2)
+
 
 			case _:
 				raise TypeError(f'invalid TokenType: {self.tk.getTokenType()}')

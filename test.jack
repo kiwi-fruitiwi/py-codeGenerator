@@ -1,8 +1,0 @@
-class Main {
-   function void main() {
-     var String s;
-     let s = "Hello!";
-
-     return;
-   }
-}
