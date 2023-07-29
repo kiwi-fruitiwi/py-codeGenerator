@@ -148,7 +148,9 @@
 			kindOf(name)
 			typeOf(name)
 			indexOf(name)
-		when compiling error-free Jack code, each symbol not found in the two symbol tables can be assumed to be either a subroutine name or a class name. This covers all bases for 'identifier'.
+		when compiling error-free Jack code, each symbol not found in the two
+		symbol tables can be assumed to be either a subroutine name or a class name.
+		This covers all bases for 'identifier'.
 	VMWriter ← a list of wrapper functions
 		writePush(segment, index)
 		writePop(segment, index)
@@ -158,8 +160,8 @@
 		return
 		close
 	compilationEngine
-		organized as a series of compileₓ routines
-		each compile routine should read the ₓ construct from the input
+		organized as a series of compile* routines
+		each compile routine should read the * construct from the input
 			advance and compile
 
 
@@ -209,7 +211,7 @@
 			caller must remember it called a void subroutine
 				get rid of top of stack
 
-	compiling costants
+	compiling constants
 		null and false are mapped to constant 0
 		true is mapped to constant -1 ← push 1, neg
 

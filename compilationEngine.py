@@ -819,15 +819,25 @@ class CompilationEngine:
 		assert self.tk.symbol() == '='
 
 		self.eat('=')
-
-		# for expressionLess, use term: id, strC, intC
-		# can also be true, false, null, this ← keywords!
-		# → actually, these are both taken care of in compileExpr,Term
 		self.compileExpression()
 
 		# if an array was detected on the left side of the equation, we have to
 		# pop its address into temp 0 to prevent clobbering the left-hand side's
 		# array access
+		#
+		# general solution for arr[exp₁] = exp₂
+		#     push arr 		  → base address of array
+		#     VM commands to evaluate exp₁
+		#     push exp₁
+		#     add
+		#
+		#     VM commands to evaluate exp₂ ← can use 'that' freely
+		#     push exp₂
+		#     pop temp 0 	  → store value of exp₂
+		#                 	  → now base address of arr[exp₁] is on the stack
+		#     pop pointer 1   → puts arr[exp₁] into that
+		#     push temp 0     → fetches stored value of exp₂
+		#     pop that 0      → assigns exp₂ to arr[exp₁]
 		if arrayLeftSide:
 			# push temp 0 to put right-hand value on the stack in case it's
 			# also an array and needs pointer 1
@@ -844,15 +854,13 @@ class CompilationEngine:
 
 		else:
 			# no array exists, so we don't have to use temp 0
-			pass
+			# make sure the result of the expression is popped into the memSeg
+			# of the defined variable
+			self.vmPopVariable(varName)
 
 		self.eat(';')
 		self.outdent()
 		self.write('</letStatement>\n')
-
-		# make sure the result of the expression is popped into the memSeg
-		# of the defined variable
-		self.vmPopVariable(varName)
 
 	# compiles an if statement, possibly with a trailing else clause
 	# if '(' expression ')' '{' statements '}' (else '{' statements '}')?
