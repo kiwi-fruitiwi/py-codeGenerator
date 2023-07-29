@@ -806,7 +806,7 @@ class CompilationEngine:
 		# if next token is '[', eat('['), compileExpr, eat(']')
 		if self.tk.symbol() == '[':
 			arrayLeftSide = True
-			print(f'[ DEBUG ]🥬 array detected in left side of let statement')
+			print(f'[ DEBUG ] array detected in 🥬left side of let statement')
 
 			self.eat('[')
 
@@ -1198,7 +1198,6 @@ class CompilationEngine:
 				identifier: str = self.tk.identifier()
 				classOrSrtName: bool = False
 
-				# can remove this comment block when everything works:
 				# what identifier is this? use st.kindOf with {value}
 				#  (static|field|argument|local)Variable tag
 				#  .
@@ -1222,7 +1221,7 @@ class CompilationEngine:
 					classOrSrtName = True
 					print(
 						f'[ DEBUG ] compileTerm: class/srtName detected: '
-						f'{classOrSrtName} for {identifier}')
+						f'{identifier}')
 
 					# we will take care of token output in LL2 cases below!
 				else:
@@ -1238,7 +1237,7 @@ class CompilationEngine:
 
 					stIndex: int = self.symbolTables.indexOf(identifier)
 					print(
-						f'[ DEBUG ] compileTerm: identifier →{identifier}← '
+						f'[ DEBUG ] compileTerm: identifier ({identifier}) '
 						f'in symbolTable detected. '
 						f'kind: {kind}, index: {stIndex}'
 					)
@@ -1276,17 +1275,12 @@ class CompilationEngine:
 							print(f'[ DEBUG ] inside compileTerm brackets: []')
 
 							assert not classOrSrtName
-							arrayName: str = identifier
-
 							self.eat('[')
 
 							# inside '[]' is the array offset
 							self.compileExpression()
 							# get the value of the variable ← symbolTable lookup
 							# push it onto the stack: it's the base address
-
-							# TODO ensure no other branches need this
-							self.vmPushVariable(arrayName)
 
 							# add the array offset and the base addr together!
 							self.vmWriter.writeArithmetic(ArithType.ADD)

@@ -1,28 +1,27 @@
 function SimpleArrAssign.main 4
 push constant 7
-pop local 1           [length]
-push local 1          [length]
+pop local 1
+push local 1
 call Array.new 1
-pop local 0           [a]
+pop local 0
 push constant 0
-pop local 2           [i]
-push local 2          [i]
-push local 0          [a]
+pop local 2
+push local 2
+push local 0
 add
 push constant 343
 pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
-push local 3          [sum]
-push local 0          [a]
-push local 2          [i]
-push local 0          [a]
+push local 3
+push local 0
+push local 2
 add
 pop pointer 1
 push that 0
 add
-pop local 3           [sum]
+pop local 3
 push constant 0
 return
 
