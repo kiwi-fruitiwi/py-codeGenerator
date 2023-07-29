@@ -1,0 +1,10 @@
+class NewArray {
+   function void main() {
+     var Array a;
+     var int length;
+     var int i, sum;
+
+     let length = 7;
+     let a = Array.new(length); // constructs the array
+   }
+}

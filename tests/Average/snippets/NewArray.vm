@@ -1,0 +1,6 @@
+function NewArray.main 4
+push constant 7
+pop local 1
+push local 1
+call Array.new 1
+pop local 0

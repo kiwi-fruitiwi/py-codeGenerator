@@ -1,0 +1,6 @@
+function SimpleLet.main 4
+push constant 0
+pop local 2
+push constant 0
+return
+

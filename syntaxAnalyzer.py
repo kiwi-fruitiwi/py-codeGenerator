@@ -120,7 +120,7 @@ def main(uri: str) -> None:
     """
 
     if os.path.isfile(uri):
-        print(f'[  DETECT ] 🔬 file detected: {uri}')
+        print(f'[ DETECT ] 📁 file detected: {uri}')
         path = Path(uri)
         stem: str = path.stem
 
@@ -129,7 +129,7 @@ def main(uri: str) -> None:
         compileSingleFile(str(path), xmlOutputPath, vmOutputPath)
 
     elif os.path.isdir(uri):
-        print(f'[  DETECT ] 🔬 directory detected: {uri}')
+        print(f'[ DETECT ] 🗃️ directory detected: {uri}')
 
         # find .jack files in this directory and compile them
         for uri in pathlib.Path(uri).iterdir():
@@ -141,8 +141,8 @@ def main(uri: str) -> None:
                 print(f'[ COMPILE ] 🌊 {uri}')
                 compileSingleFile(str(uri), xmlOutputPath, vmOutputPath)
     else:
-        print(f'🍒 neither file or directory detected')
+        print(f'⚠️ neither file or directory detected')
 
 
-main('tests/Square/')
+main('tests/Average/snippets/NewArray.jack')
 # main('test.jack')

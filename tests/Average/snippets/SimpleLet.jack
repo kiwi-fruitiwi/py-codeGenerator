@@ -1,0 +1,10 @@
+class SimpleLet {
+   function void main() {
+     var Array a;
+     var int length;
+     var int i, sum;
+
+     let i = 0;
+     return;
+   }
+}

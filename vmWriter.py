@@ -93,6 +93,10 @@ class VMWriter:
 		"""
 		writes a VM call command
 		"""
+		print(
+			f'[ DEBUG ] __compileSubroutineCallHelper '
+			f'writeCall for class method 🖋️{className}.{functionName}'
+		)
 		self.out.write(f'call {className}.{functionName} {nArgs}\n')
 
 

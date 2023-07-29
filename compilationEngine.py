@@ -113,7 +113,7 @@ class CompilationEngine:
 	# e.g. arr → 'push local 0'
 	def vmPushVariable(self, varName: str):
 		st: SymbolTable = self.symbolTables
-		print(f'{st}')
+		# print(f'[ DEBUG ] 📍 vmPushVariable: {st}')
 		assert st.hasVar(varName), f'{varName}'
 
 		stIndex: int = st.indexOf(varName)
@@ -202,7 +202,10 @@ class CompilationEngine:
 		self.outdent()
 		self.write('</class>\n')
 
-		print(f'\n{self.symbolTables.getClassLevelSymTableRepr()}')
+		print(
+			f'\n[ DEBUG ] end of compileClass → '
+			f'\n{self.symbolTables.getClassLevelSymTableRepr()}'
+		)
 
 	# compiles a static variable or field declaration
 	def compileClassVarDec(self):
@@ -381,9 +384,15 @@ class CompilationEngine:
 		# now that we know the subroutine name, we can output a more detailed
 		# console msg about the return value
 		if self.currentSrtIsVoid:
-			print(f'{self.className}.{self.subroutineName} is void')
+			print(
+				f'[ DEBUG ] srtDecHelper: '
+				f'{self.className}.{self.subroutineName} is void'
+			)
 		else:
-			print(f"{self.className}.{self.subroutineName}'s return type is {self.srtReturnType}")
+			print(
+				f"[ DEBUG ] {self.className}.{self.subroutineName}'s "
+				f"return type is {self.srtReturnType}"
+			)
 
 		# '(' parameterList ')'
 		self.eat('(')
@@ -392,7 +401,10 @@ class CompilationEngine:
 
 		# subroutineBody → { varDec* statements }
 		self.compileSubroutineBody(isConstructor, isMethod)
-		print(f'\n{self.symbolTables.getSrtLevelSymTableRepr(self.subroutineName)}')
+		print(
+			f'\n[ DEBUG ] compileSrtDecHelper → compiled full subroutine\n'
+			f'{self.symbolTables.getSrtLevelSymTableRepr(self.subroutineName)}'
+		)
 
 		self.outdent()
 		self.write('</subroutineDec>\n')
@@ -552,7 +564,7 @@ class CompilationEngine:
 		# var type varName
 		self.eat('var')
 		vType: str = self.__compileType()
-		print(f'🍓 vType → {vType}')
+		# print(f'[ DEBUG ] compileVarDec vType → {vType}')
 
 		# varName (',' varName)*';'
 		self.__compileVarNameList(vType, VarKind.VAR)
@@ -781,7 +793,7 @@ class CompilationEngine:
 		# className, varName, subRName all identifiers ← 'program structure'
 		# this variable has to be defined in order for let to be used
 		varName: str = self.compileDefinedVariable()
-		print(f'🍒 {varName} defined already')
+		# print(f'[ DEBUG ] compileLet: {varName} defined already')
 
 		# check next token for two options: '[' or '='
 		self.peek()
@@ -1100,7 +1112,6 @@ class CompilationEngine:
 			return
 
 		# TODO identifierName is a class!
-		print(f'writeCall for class method 🔥{identifierName}.{srtName}')
 		self.vmWriter.writeCall(identifierName, srtName, expressionCount)
 
 	# 'return' expression? ';'
@@ -1173,7 +1184,7 @@ class CompilationEngine:
 
 		unaryOp is ['-', '~']
 		"""
-		print(f'🪶 compileTerm')
+		# print(f'[ DEBUG ] 🪶 compileTerm')
 
 		# 🏭 integerConst stringConst keywordConst identifier unaryOp→term
 		# remember that keywordConstants are false, true, null, this
@@ -1209,7 +1220,9 @@ class CompilationEngine:
 					# 	case '(': write <srtName> as tag
 					#	case '.': must be className → '.' → srtName
 					classOrSrtName = True
-					print(f'🍒 class/srtName detected: {classOrSrtName} for {identifier}')
+					print(
+						f'[ DEBUG ] compileTerm: class/srtName detected: '
+						f'{classOrSrtName} for {identifier}')
 
 					# we will take care of token output in LL2 cases below!
 				else:
@@ -1225,7 +1238,8 @@ class CompilationEngine:
 
 					stIndex: int = self.symbolTables.indexOf(identifier)
 					print(
-						f'🫐 identifier {identifier} in symbolTable detected →'
+						f'[ DEBUG ] compileTerm: identifier {identifier} '
+						f'in symbolTable detected →'
 						f' kind: {kind}, index: {stIndex}'
 					)
 
@@ -1412,7 +1426,7 @@ class CompilationEngine:
 		pattern: term (op term)*
 		"""
 
-		print(f'🍋 compiling expression!')
+		# print(f'[ DEBUG ] compiling expression!')
 
 		# keep track of any ops we see from self.opsList
 		# reverse list at the end of expression to apply them one by one

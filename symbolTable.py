@@ -215,16 +215,15 @@ class SymbolTable:
 		# throw error if name doesn't exist in either
 		raise ValueError(f'{name} not found in either symbol table')
 
-
+	# iterate through both tables and display them
+	# helper function: printSymbolTable(d: dict)
 	def __repr__(self):
-		# iterate through both tables and display them
-		# helper function: printSymbolTable(d: dict)
 		result = self.getClassLevelSymTableRepr() + '\n'
 		result += self.getSrtLevelSymTableRepr('unspecified')
 		return result
 
 	def getClassLevelSymTableRepr(self) -> str:
-		result = '🔥 class-level symbol table:\n'
+		result = '💦 class-level symbol table:\n'
 		result += displaySymbolTable(self.classTable)
 		return result
 
@@ -232,7 +231,7 @@ class SymbolTable:
 	def getSrtLevelSymTableRepr(self, srtName: str) -> str:
 		# iterate through both tables and display them
 		# helper function: printSymbolTable(d: dict)
-		result = f'🐳 subroutine-level symbol table: {srtName}\n'
+		result = f'🔥 subroutine-level symbol table: {srtName}\n'
 		result += displaySymbolTable(self.srtTable)
 		return result
 
