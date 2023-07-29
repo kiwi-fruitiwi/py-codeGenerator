@@ -1,6 +1,6 @@
 <class>
   <keyword> class </keyword>
-  <className> NewArray </className>
+  <className> SimpleArrAssign </className>
   <symbol> { </symbol>
   <subroutineDec>
     <keyword> function </keyword>
@@ -62,6 +62,57 @@
                   </expression>
                 </expressionList>
                 <symbol> ) </symbol>
+              </term>
+          </expression>
+          <symbol> ; </symbol>
+        </letStatement>
+        <letStatement>
+          <keyword> let </keyword>
+          <localVariable> i </localVariable>
+          <symbol> = </symbol>
+          <expression>
+              <term>
+                <integerConstant> 0 </integerConstant>
+              </term>
+          </expression>
+          <symbol> ; </symbol>
+        </letStatement>
+        <letStatement>
+          <keyword> let </keyword>
+          <localVariable> a </localVariable>
+          <symbol> [ </symbol>
+          <expression>
+              <term>
+                <localVariable> i </localVariable>
+              </term>
+          </expression>
+          <symbol> ] </symbol>
+          <symbol> = </symbol>
+          <expression>
+              <term>
+                <integerConstant> 343 </integerConstant>
+              </term>
+          </expression>
+          <symbol> ; </symbol>
+        </letStatement>
+        <letStatement>
+          <keyword> let </keyword>
+          <localVariable> sum </localVariable>
+          <symbol> = </symbol>
+          <expression>
+              <term>
+                <localVariable> sum </localVariable>
+              </term>
+              <symbol> + </symbol>
+              <term>
+                <localVariable> a </localVariable>
+                <symbol> [ </symbol>
+                <expression>
+                    <term>
+                      <localVariable> i </localVariable>
+                    </term>
+                </expression>
+                <symbol> ] </symbol>
               </term>
           </expression>
           <symbol> ; </symbol>

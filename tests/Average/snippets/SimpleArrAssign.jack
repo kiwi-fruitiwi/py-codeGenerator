@@ -1,4 +1,4 @@
-class NewArray {
+class SimpleArrAssign {
    function void main() {
      var Array a;
      var int length;
@@ -6,6 +6,12 @@ class NewArray {
 
      let length = 7;
      let a = Array.new(length); // constructs the array
+
+     // old test code above, new snippet below
+     let i = 0;
+     let a[i] = 343;
+     let sum = sum + a[i];
+
      return;
    }
 }

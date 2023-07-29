@@ -28,24 +28,37 @@ class ArithType(enum.Enum):
 
 
 class VMWriter:
+	DEBUG: bool = True
+	maxLineWidth: int = 20
+
 	def __init__(self, outputUri):
 		"""
 		creates a new output .vm file and prepares it for writing
 		"""
-		self.out = open(outputUri, 'w')
+		self.out = open(outputUri, 'w', encoding='utf-8')
 
-	def writeSegPush(self, segment: SegType, index: int):
+	# writes a string to self.out. includes extra information if DEBUG = True
+	def writeToFile(self, output: str, varName: str):
+		# sometimes varName is None, like when dealing with constants, this/that
+		if self.DEBUG and varName:
+			self.out.write(f'{output:{self.maxLineWidth}}  [{varName}]\n')
+		else:
+			self.out.write(f'{output}\n')
+
+	def writeSegPush(self, segment: SegType, index: int, varName: str = None):
 		"""
 		writes a VM push command, e.g. 'push local 0'
 		"""
-		self.out.write(f'push {segment.value} {index}\n')
+		output: str = f'push {segment.value} {index}'
+		self.writeToFile(output, varName)
 
-	def writeVarPush(self, segment: VarKind, index: int):
+	def writeVarPush(self, segment: VarKind, index: int, varName: str = None):
 		"""
 		writes a VM push command, e.g. 'push local 0'
 		but supports SymbolTable's VarKind enumeration instead of our SegType
 		"""
-		self.out.write(f'push {segment.value} {index}\n')
+		output: str = f'push {segment.value} {index}'
+		self.writeToFile(output, varName)
 
 	def writeSegPop(self, segment: SegType, index: int):
 		"""
@@ -53,12 +66,13 @@ class VMWriter:
 		"""
 		self.out.write(f'pop {segment.value} {index}\n')
 
-	def writeVarPop(self, segment: VarKind, index: int):
+	def writeVarPop(self, segment: VarKind, index: int, varName: str = None):
 		"""
 		writes a VM pop command, e.g. 'pop argument 0'
 		but supports SymbolTable's VarKind enumeration instead of our SegType
 		"""
-		self.out.write(f'pop {segment.value} {index}\n')
+		output: str = f'pop {segment.value} {index}'
+		self.writeToFile(output, varName)
 
 
 	def writeArithmetic(self, command: ArithType):

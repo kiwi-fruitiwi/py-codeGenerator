@@ -118,7 +118,7 @@ class CompilationEngine:
 
 		stIndex: int = st.indexOf(varName)
 		stKind: VarKind = st.kindOf(varName)
-		self.vmWriter.writeVarPush(stKind, stIndex)
+		self.vmWriter.writeVarPush(stKind, stIndex, varName=varName)
 
 	# same as writePushVariable, but for popping off the stack into a desired
 	# memory segment
@@ -128,7 +128,7 @@ class CompilationEngine:
 
 		stIndex: int = st.indexOf(varName)
 		stKind: VarKind = st.kindOf(varName)
-		self.vmWriter.writeVarPop(stKind, stIndex)
+		self.vmWriter.writeVarPop(stKind, stIndex, varName=varName)
 
 
 	def indent(self):
@@ -806,7 +806,7 @@ class CompilationEngine:
 		# if next token is '[', eat('['), compileExpr, eat(']')
 		if self.tk.symbol() == '[':
 			arrayLeftSide = True
-			print(f'🥬 array detected in left side of let statement')
+			print(f'[ DEBUG ]🥬 array detected in left side of let statement')
 
 			self.eat('[')
 
@@ -1238,9 +1238,9 @@ class CompilationEngine:
 
 					stIndex: int = self.symbolTables.indexOf(identifier)
 					print(
-						f'[ DEBUG ] compileTerm: identifier {identifier} '
-						f'in symbolTable detected →'
-						f' kind: {kind}, index: {stIndex}'
+						f'[ DEBUG ] compileTerm: identifier →{identifier}← '
+						f'in symbolTable detected. '
+						f'kind: {kind}, index: {stIndex}'
 					)
 
 					self.vmPushVariable(identifier)
@@ -1273,7 +1273,7 @@ class CompilationEngine:
 							self.__compileSubroutineCallHelper(identifier)
 
 						case '[':  # matches varName[expression]
-							print(f'[  DEBUG  ] inside compileTerm []')
+							print(f'[ DEBUG ] inside compileTerm brackets: []')
 
 							assert not classOrSrtName
 							arrayName: str = identifier
