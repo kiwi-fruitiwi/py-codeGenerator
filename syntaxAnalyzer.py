@@ -144,5 +144,5 @@ def main(uri: str) -> None:
         print(f'⚠️ neither file or directory detected')
 
 
-main('tests/Pong/Ball.jack')
+main('tests/Pong/Bat.jack')
 # main('test.jack')
