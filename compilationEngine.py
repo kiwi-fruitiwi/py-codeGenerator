@@ -1086,6 +1086,9 @@ class CompilationEngine:
 			self.eat('.')
 			srtName: str = self.compileSubroutineName()
 
+		if isSubroutineOnly:
+			self.vmWriter.writeSegPush(SegType.POINTER, 0)  # this
+
 		# we've taken care of 'subroutineName'
 		# now process the common tail grammar: (expressionList)
 		# then eat('(') → compileExpressionList
@@ -1100,7 +1103,6 @@ class CompilationEngine:
 		# remember we need to push 'this' on the stack as a method's arg 0
 		# TODO make sure this works for multiple arguments
 		if isSubroutineOnly:
-			self.vmWriter.writeSegPush(SegType.POINTER, 0)  # this
 			self.vmWriter.writeCall(self.className, srtName, expressionCount+1)
 			return
 
